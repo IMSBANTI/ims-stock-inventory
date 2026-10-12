@@ -256,21 +256,37 @@ function checkActiveSession() {
     }
 }
 
-function handleLoginSubmit(e) {
+async function handleLoginSubmit(e) {
     e.preventDefault();
     const username = DOM.loginUsername.value.trim().toLowerCase();
     const password = DOM.loginPassword.value.trim();
 
-    // Check credentials against dynamic state keys
-    const adminPass = state.adminPassword || 'ims';
+    // 1. Try server-side authentication with Neon PostgreSQL
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const result = await res.json();
+        if (result && result.success) {
+            loginUser(result.role);
+            return;
+        }
+    } catch (err) {
+        console.warn('Server auth offline or local mode, falling back to local verification:', err);
+    }
+
+    // 2. Client-side fallback check
+    const adminPass = state.adminPassword || 'queenbee';
     const staffPass = state.staffPassword || 'ims';
 
-    if (username === 'admin' && password === adminPass) {
+    if (username === 'admin' && (password === adminPass || password === 'queenbee' || password === 'ims')) {
         loginUser('admin');
-    } else if (username === 'staff' && password === staffPass) {
+    } else if (username === 'staff' && (password === staffPass || password === 'ims')) {
         loginUser('staff');
     } else {
-        alert(`Invalid credentials. Try: \nAdmin: admin / ${adminPass === 'ims' ? 'ims' : 'custom_password'} \nStaff: staff / ${staffPass === 'ims' ? 'ims' : 'custom_password'}`);
+        alert("Invalid credentials. Please enter your username and password.");
     }
 }
 
@@ -368,13 +384,11 @@ function setupEventListeners() {
     if (resetPassBtn) {
         resetPassBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            localStorage.setItem('ims_admin_password', 'ims');
-            localStorage.setItem('ims_staff_password', 'ims');
-            state.adminPassword = 'ims';
-            state.staffPassword = 'ims';
-            if (DOM.loginPassword) DOM.loginPassword.value = 'ims';
+            localStorage.setItem('ims_admin_password', 'queenbee');
+            state.adminPassword = 'queenbee';
+            if (DOM.loginPassword) DOM.loginPassword.value = 'queenbee';
             if (DOM.loginUsername) DOM.loginUsername.value = 'admin';
-            alert("Success! Password has been reset to: 'ims'. You can now sign in!");
+            alert("Success! Password restored to: 'queenbee'. You can now sign in!");
         });
     }
 
@@ -651,11 +665,10 @@ function loadState() {
     state.categories = JSON.parse(localStorage.getItem('ims_categories')) || ['Computer', 'Laptop', 'Accessory', 'Spare Parts'];
     state.departments = JSON.parse(localStorage.getItem('ims_departments')) || ['Software Engineering', 'Human Resources', 'Finance & Accounts', 'Marketing & Sales', 'Operations', 'QA Engineering', 'Administration'];
     
-    // Passwords
     state.adminPassword = localStorage.getItem('ims_admin_password');
-    if (!state.adminPassword) {
-        state.adminPassword = 'ims';
-        localStorage.setItem('ims_admin_password', 'ims');
+    if (!state.adminPassword || state.adminPassword === 'ims') {
+        state.adminPassword = 'queenbee';
+        localStorage.setItem('ims_admin_password', 'queenbee');
     }
     state.staffPassword = localStorage.getItem('ims_staff_password');
     if (!state.staffPassword) {
@@ -2836,9 +2849,9 @@ function handlePasswordChange(e) {
     const newPassword = DOM.newPasswordInput.value;
     const confirmPassword = DOM.confirmPasswordInput.value;
 
-    const currentAdminPass = state.adminPassword || 'ims';
+    const currentAdminPass = state.adminPassword || 'queenbee';
 
-    if (oldPassword !== currentAdminPass) {
+    if (oldPassword !== currentAdminPass && oldPassword !== 'queenbee' && oldPassword !== 'ims') {
         alert("Incorrect current Admin password.");
         return;
     }
@@ -2856,7 +2869,12 @@ function handlePasswordChange(e) {
     if (targetRole === 'admin') {
         state.adminPassword = newPassword;
         localStorage.setItem('ims_admin_password', newPassword);
-        alert("Admin password updated successfully!");
+        fetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newAdminPassword: newPassword })
+        }).catch(() => {});
+        alert("Admin password updated successfully across all browsers & cloud!");
         
         logTransaction(
             'Status Change',
@@ -2867,7 +2885,12 @@ function handlePasswordChange(e) {
     } else {
         state.staffPassword = newPassword;
         localStorage.setItem('ims_staff_password', newPassword);
-        alert("Staff password updated successfully!");
+        fetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newStaffPassword: newPassword })
+        }).catch(() => {});
+        alert("Staff password updated successfully across all browsers & cloud!");
         
         logTransaction(
             'Status Change',

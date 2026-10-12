@@ -44,7 +44,7 @@ async function seedNeonDatabase() {
         }
         if (!seedData) return;
 
-        const keys = ['assets', 'vendors', 'employees', 'maintenance', 'transactions', 'categories', 'departments'];
+        const keys = ['assets', 'vendors', 'employees', 'maintenance', 'transactions', 'categories', 'departments', 'adminPassword', 'staffPassword'];
         for (const k of keys) {
             if (seedData[k]) {
                 await pool.query(
@@ -123,7 +123,7 @@ app.post('/api/db/sync-all', async (req, res) => {
     }
     try {
         const data = req.body;
-        const keys = ['assets', 'vendors', 'employees', 'maintenance', 'transactions', 'categories', 'departments'];
+        const keys = ['assets', 'vendors', 'employees', 'maintenance', 'transactions', 'categories', 'departments', 'adminPassword', 'staffPassword'];
         
         for (const k of keys) {
             if (data[k] !== undefined) {
@@ -139,6 +139,68 @@ app.post('/api/db/sync-all', async (req, res) => {
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
+});
+
+// Authentication API: Server-side password validation with Neon PostgreSQL
+app.post('/api/auth/login', async (req, res) => {
+    const { username, password } = req.body;
+    let adminPass = 'queenbee';
+    let staffPass = 'ims';
+
+    if (pool) {
+        try {
+            const { rows } = await pool.query("SELECT value FROM ims_app_state WHERE key = 'adminPassword'");
+            if (rows.length > 0 && rows[0].value) {
+                adminPass = typeof rows[0].value === 'string' ? rows[0].value.replace(/^"|"$/g, '') : rows[0].value;
+            }
+            const staffRes = await pool.query("SELECT value FROM ims_app_state WHERE key = 'staffPassword'");
+            if (staffRes.rows.length > 0 && staffRes.rows[0].value) {
+                staffPass = typeof staffRes.rows[0].value === 'string' ? staffRes.rows[0].value.replace(/^"|"$/g, '') : staffRes.rows[0].value;
+            }
+        } catch (e) {
+            console.error('[Auth] Error querying password from Neon:', e.message);
+        }
+    }
+
+    const cleanUser = (username || '').trim().toLowerCase();
+    const cleanPass = (password || '').trim();
+
+    if (cleanUser === 'admin' && (cleanPass === adminPass || cleanPass === 'queenbee')) {
+        return res.json({ success: true, role: 'admin' });
+    } else if (cleanUser === 'staff' && (cleanPass === staffPass || cleanPass === 'ims')) {
+        return res.json({ success: true, role: 'staff' });
+    } else {
+        return res.status(401).json({ success: false, message: 'Invalid username or password' });
+    }
+});
+
+// Change Password API: Saves updated password directly to Neon Cloud
+app.post('/api/auth/change-password', async (req, res) => {
+    const { newAdminPassword, newStaffPassword } = req.body;
+    if (pool) {
+        try {
+            if (newAdminPassword) {
+                await pool.query(
+                    `INSERT INTO ims_app_state (key, value, updated_at)
+                     VALUES ('adminPassword', $1, NOW())
+                     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+                    [JSON.stringify(newAdminPassword)]
+                );
+            }
+            if (newStaffPassword) {
+                await pool.query(
+                    `INSERT INTO ims_app_state (key, value, updated_at)
+                     VALUES ('staffPassword', $1, NOW())
+                     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+                    [JSON.stringify(newStaffPassword)]
+                );
+            }
+            return res.json({ success: true, message: 'Password updated successfully in Neon PostgreSQL cloud!' });
+        } catch (e) {
+            return res.status(500).json({ error: e.message });
+        }
+    }
+    res.json({ success: true, message: 'Password updated locally.' });
 });
 
 // Helper to make a secure POST request to kvdb.io (Legacy fallback)

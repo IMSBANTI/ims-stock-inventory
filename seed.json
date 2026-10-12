@@ -2378,5 +2378,7 @@
       "details": "Hardware upgrade/repair: \"Battery and Fan\" status [Completed] supplied by GOTech Computer. Reason: Online UPS not working.",
       "operator": "IT Admin (ADMIN)"
     }
-  ]
+  ],
+  "adminPassword": "queenbee",
+  "staffPassword": "ims"
 }
