@@ -1413,8 +1413,8 @@ function renderInventoryTable() {
         });
 
         const statusClass = `status-${asset.status.toLowerCase()}`;
-        const userDisplay = asset.status === 'Assigned' 
-            ? `<div style="font-weight: 600;">${asset.assignedUser}</div><div style="font-size:11px; color:var(--text-muted);">${asset.department}</div>`
+        const userDisplay = asset.assignedUser 
+            ? `<div style="font-weight: 600;">${asset.assignedUser}</div><div style="font-size:11px; color:var(--text-muted);">${asset.department || ''}</div>`
             : `<span style="color: var(--text-muted);">Unassigned</span>`;
 
         // Fetch hardware upgrades/replacements
@@ -1533,11 +1533,19 @@ function openDrawer(assetId) {
             DOM.drawerAssignmentDesc.innerHTML = `Assigned to <strong>${asset.assignedUser}</strong> (${asset.department})`;
             assignActions.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="returnAsset('${asset.id}'); closeDrawer();">Return Stock</button>`;
         } else if (asset.status === 'Maintenance') {
-            DOM.drawerAssignmentDesc.innerHTML = `<span style="color:var(--color-warning);">Under repair / Parts Replacement</span>`;
+            const userSubtext = asset.assignedUser 
+                ? ` — Assigned to <strong>${asset.assignedUser}</strong> (${asset.department})`
+                : '';
+            DOM.drawerAssignmentDesc.innerHTML = `<span style="color:var(--color-warning);">Under repair / Parts Replacement</span>${userSubtext}`;
             assignActions.innerHTML = `<button class="btn btn-primary btn-sm" onclick="setAssetAvailable('${asset.id}'); closeDrawer();">Mark Ready</button>`;
         } else {
-            DOM.drawerAssignmentDesc.textContent = 'Device is available for assignment';
-            assignActions.innerHTML = `<button class="btn btn-primary btn-sm" onclick="closeDrawer(); openAssignModal('${asset.id}')">Deploy Workstation</button>`;
+            if (asset.assignedUser) {
+                DOM.drawerAssignmentDesc.innerHTML = `Assigned to <strong>${asset.assignedUser}</strong> (${asset.department})`;
+                assignActions.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="returnAsset('${asset.id}'); closeDrawer();">Return Stock</button>`;
+            } else {
+                DOM.drawerAssignmentDesc.textContent = 'Device is available for assignment';
+                assignActions.innerHTML = `<button class="btn btn-primary btn-sm" onclick="closeDrawer(); openAssignModal('${asset.id}')">Deploy Workstation</button>`;
+            }
         }
         DOM.drawerEditBtn.style.display = 'inline-flex';
         DOM.drawerDeleteBtn.style.display = 'inline-flex';
@@ -1547,9 +1555,12 @@ function openDrawer(assetId) {
         if (asset.status === 'Assigned') {
             DOM.drawerAssignmentDesc.innerHTML = `Assigned to <strong>${asset.assignedUser}</strong> (${asset.department})`;
         } else if (asset.status === 'Maintenance') {
-            DOM.drawerAssignmentDesc.innerHTML = `<span style="color:var(--color-warning);">Under Maintenance Repair</span>`;
+            const userSubtext = asset.assignedUser 
+                ? ` — Assigned to <strong>${asset.assignedUser}</strong> (${asset.department})`
+                : '';
+            DOM.drawerAssignmentDesc.innerHTML = `<span style="color:var(--color-warning);">Under Maintenance Repair</span>${userSubtext}`;
         } else {
-            DOM.drawerAssignmentDesc.textContent = 'Device is available';
+            DOM.drawerAssignmentDesc.textContent = asset.assignedUser ? `Assigned to ${asset.assignedUser} (${asset.department})` : 'Device is available';
         }
         DOM.drawerEditBtn.style.display = 'none';
         DOM.drawerDeleteBtn.style.display = 'none';
@@ -1674,13 +1685,13 @@ function setAssetAvailable(assetId) {
     const asset = state.assets.find(a => a.id === assetId);
     if (!asset) return;
 
-    asset.status = 'Available';
+    asset.status = asset.assignedUser ? 'Assigned' : 'Available';
     saveState();
     logTransaction(
         'Status Change',
         asset.tag,
         asset.name,
-        `Device marked Available (released from Maintenance repair).`
+        `Device marked ${asset.status} (released from Maintenance repair).`
     );
     renderAll();
 }
@@ -2176,7 +2187,7 @@ function handleMaintenanceSubmit(e) {
         if (status === 'Completed') {
             const activeLogs = state.maintenance.filter(m => m.assetId === asset.id && m.status !== 'Completed');
             if (activeLogs.length === 0) {
-                asset.status = 'Available';
+                asset.status = asset.assignedUser ? 'Assigned' : 'Available';
             }
         } else {
             asset.status = 'Maintenance';
@@ -2209,7 +2220,10 @@ function handleMaintenanceSubmit(e) {
         
         // Shift asset status to Maintenance if repair is ongoing
         if (status === 'Completed') {
-            asset.status = 'Available';
+            const activeLogs = state.maintenance.filter(m => m.assetId === asset.id && m.status !== 'Completed');
+            if (activeLogs.length === 0) {
+                asset.status = asset.assignedUser ? 'Assigned' : 'Available';
+            }
         } else {
             asset.status = 'Maintenance';
         }
@@ -3152,15 +3166,13 @@ window.changeMaintStatus = function(logId, newStatus, event) {
         if (newStatus === 'Completed') {
             const activeLogs = state.maintenance.filter(m => m.assetId === asset.id && m.status !== 'Completed');
             if (activeLogs.length === 0) {
-                if (confirm(`Maintenance item marked Completed. Would you like to release asset "${asset.name}" back to "Available" stock?`)) {
-                    asset.status = 'Available';
-                    logTransaction(
-                        'Status Change',
-                        asset.tag,
-                        asset.name,
-                        `Asset released from maintenance pipeline. Status updated to Available.`
-                    );
-                }
+                asset.status = asset.assignedUser ? 'Assigned' : 'Available';
+                logTransaction(
+                    'Status Change',
+                    asset.tag,
+                    asset.name,
+                    `Asset released from maintenance pipeline. Status updated to [${asset.status}].`
+                );
             }
         } else {
             asset.status = 'Maintenance';
