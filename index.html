@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMS IT Asset & Inventory Manager</title>
+    <meta name="description" content="State-of-the-art office inventory and assignment tracker for IMS. Manage computers, laptops, accessories, parts replacements, and vendors.">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- ================= LOGIN / AUTHENTICATION OVERLAY ================= -->
+    <div class="login-overlay active" id="login-overlay">
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="logo-icon clickable-logo" id="login-logo-display" style="width: 50px; height: 50px; font-size: 24px;" title="Click to upload custom corporate logo image"><img src="image/IMS-Logo-C.png" alt="IMS Logo" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;"></div>
+                <h2 style="font-family: var(--font-header); font-weight: 700; margin-top: 12px; background: linear-gradient(90deg, #fff, var(--color-primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">IMS Asset Manager</h2>
+                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Integrated Marketing Services Ltd.</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="form-group" style="text-align: left;">
+                    <label class="form-label" for="login-username">Username</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="e.g. admin or staff" required>
+                </div>
+                
+                <div class="form-group" style="text-align: left;">
+                    <label class="form-label" for="login-password">Password</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+                </div>
+                
+                <div style="font-size:12px; color:var(--text-muted); background:var(--bg-app); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); text-align:left; line-height:1.4; margin-bottom: 20px;">
+                    💡 <strong>Quick Credentials:</strong><br>
+                    • Admin Access: <code>admin</code> / <code>ims</code><br>
+                    • Staff Access: <code>staff</code> / <code>ims</code>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; font-size:15px; padding: 12px;">Sign In</button>
+            </form>
+
+            <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px; text-align: center; display: flex; flex-direction: column; gap: 10px;">
+                <a href="#" id="login-sync-toggle" style="font-size: 13px; color: var(--color-primary); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                    Connect via Cloud Sync Token
+                </a>
+                <a href="#" id="login-reset-password-btn" style="font-size: 12px; color: var(--text-muted); text-decoration: underline; cursor: pointer;">
+                    🔑 Forgot password? Reset to default (ims)
+                </a>
+            </div>
+            
+            <div id="login-sync-container" style="display: none; margin-top: 12px; text-align: left; background: var(--bg-app); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label" for="login-sync-token" style="font-size: 11px;">Cloud Sync Token</label>
+                    <input type="text" id="login-sync-token" class="form-input" placeholder="Enter alphanumeric token" style="font-size: 12px; padding: 8px;">
+                </div>
+                <button type="button" id="btn-login-connect-sync" class="btn btn-secondary" style="width: 100%; font-size:13px; padding: 8px; justify-content: center;">Connect & Load Database</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MAIN APP WRAPPER ================= -->
+    <div class="app-container" style="display: none;" id="app-wrapper">
+        <!-- Header Section -->
+        <header>
+            <div class="logo-section">
+                <div class="logo-icon clickable-logo" id="header-logo-display" title="Click to upload custom corporate logo image"><img src="image/IMS-Logo-C.png" alt="IMS Logo" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;"></div>
+                <div class="logo-text">
+                    <h1>Asset Manager</h1>
+                    <p>Integrated Marketing Services Ltd.</p>
+                </div>
+                <!-- Hidden file uploader for corporate logo customizer -->
+                <input type="file" id="logo-file-input" accept="image/*" style="display: none;">
+            </div>
+
+            <!-- Main Tab Navigation -->
+            <nav class="nav-tabs">
+                <button class="tab-btn active" data-tab="dashboard-tab">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1h-4a1 1 0 01-1-1v-5z"></path></svg>
+                    Dashboard
+                </button>
+                <button class="tab-btn" data-tab="inventory-tab">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    Inventory Grid
+                </button>
+                <button class="tab-btn" data-tab="vendors-tab">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    Vendors
+                </button>
+                <button class="tab-btn admin-only" data-tab="logs-tab">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    Activity Trail
+                </button>
+                <button class="tab-btn admin-only" data-tab="settings-tab">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path d="M15 12a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+                    Settings
+                </button>
+            </nav>
+
+            <!-- Actions and Theme Controls -->
+            <div class="nav-controls">
+                <!-- Cloud Sync Status Badge -->
+                <div class="sync-badge sync-disabled" id="sync-status-badge">LOCAL VIEW</div>
+
+                <!-- Privilege Indicator Display -->
+                <div class="role-badge" id="role-display-badge">ADMIN VIEW</div>
+                
+                <button class="theme-toggle-btn" id="theme-toggle-btn" title="Switch Theme">
+                    <svg id="theme-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path id="theme-icon-path" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path>
+                    </svg>
+                </button>
+                
+                <!-- Logout Trigger -->
+                <button class="btn btn-secondary btn-sm" id="logout-btn" style="padding: 7px 12px;">Sign Out</button>
+            </div>
+        </header>
+
+        <!-- ================= DASHBOARD TAB CONTENT ================= -->
+        <main class="tab-content active" id="dashboard-tab">
+            <!-- KPI Cards Row -->
+            <section class="grid-kpis">
+                <div class="card-kpi">
+                    <div class="kpi-header">
+                        <span>ACTIVE WORKSTATIONS</span>
+                        <div class="kpi-icon">💻</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-workstations">0</div>
+                    <div class="kpi-footer">Computers & Laptops deployed</div>
+                </div>
+                <div class="card-kpi">
+                    <div class="kpi-header">
+                        <span>DEPLOYMENT RATE</span>
+                        <div class="kpi-icon">📈</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-deployment-rate">0%</div>
+                    <div class="kpi-footer">Percentage of assigned devices</div>
+                </div>
+                <div class="card-kpi">
+                    <div class="kpi-header">
+                        <span>MAINTENANCE / REPAIRS</span>
+                        <div class="kpi-icon">⚙️</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-maintenance">0</div>
+                    <div class="kpi-footer">Assets undergoing parts change</div>
+                </div>
+                <div class="card-kpi">
+                    <div class="kpi-header">
+                        <span>VENDOR NETWORK</span>
+                        <div class="kpi-icon">🤝</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-vendors">0</div>
+                    <div class="kpi-footer">Registered system suppliers</div>
+                </div>
+            </section>
+
+            <!-- Analytics and Charts Grid -->
+            <section class="grid-analytics">
+                <!-- IT Asset Distribution by Department (Full Width Row) -->
+                <div class="card-chart department-card-wide" style="min-height: 340px;">
+                    <div class="card-title">
+                        <span>IT Asset Distribution by Department</span>
+                        <span style="font-size: 12px; color: var(--text-muted);">Assigned Deployed Workstations</span>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="department-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- IT Asset Distribution by Category -->
+                <div class="card-chart" style="display: flex; flex-direction: column;">
+                    <div class="card-title">
+                        <span>IT Asset Distribution by Category</span>
+                        <span style="font-size: 12px; color: var(--text-muted);">Physical Inventory Breakdown</span>
+                    </div>
+                    <div class="category-grid-layout" style="margin-top: 10px;">
+                        <div class="chart-wrapper" style="height: 220px; position: relative;">
+                            <canvas id="category-chart"></canvas>
+                        </div>
+                        <div id="category-details-list" style="max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; border-left: 1px solid var(--border-color); padding-left: 16px;">
+                            <!-- Dynamic detailed list injected via app.js -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hardware Upgrade & Replacement Logs -->
+                <div class="card-chart" style="min-height: 380px; display: flex; flex-direction: column;">
+                    <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <span>Hardware Upgrade & Replacement</span>
+                        <div style="display: flex; background: var(--bg-input); padding: 2px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-maint-tab-logs" style="padding: 2px 8px; font-size: 10.5px; border-radius: var(--radius-sm); border: none; background: var(--color-primary); color: white; cursor: pointer;">Logs</button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-maint-tab-cost" style="padding: 2px 8px; font-size: 10.5px; border-radius: var(--radius-sm); border: none; background: transparent; color: var(--text-secondary); cursor: pointer;">Monthly Cost</button>
+                        </div>
+                    </div>
+                    <div style="flex-grow: 1; overflow-y: auto;" id="dashboard-maint-container">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🔧</div>
+                            <p style="font-size: 13px;">No hardware upgrades or repairs logged yet.</p>
+                        </div>
+                    </div>
+                    <div style="flex-grow: 1; overflow-y: auto; display: none;" id="dashboard-maint-cost-container">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <p style="font-size: 13px;">No maintenance costs recorded yet.</p>
+                        </div>
+                    </div>
+                    <!-- Dashboard Maintenance Pagination -->
+                    <div id="dashboard-maint-pagination" style="display: none; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border-color); margin-top: 8px;">
+                        <span id="dashboard-maint-info" style="font-size: 12px; color: var(--text-muted);">Page 1 of 1</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-dash-maint-prev" style="padding: 4px 8px; font-size: 11px;">&laquo; Prev</button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-dash-maint-next" style="padding: 4px 8px; font-size: 11px;">Next &raquo;</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- ================= INVENTORY TAB CONTENT ================= -->
+        <main class="tab-content" id="inventory-tab">
+            <!-- Filter & Action Control Bar -->
+            <section class="control-bar">
+                <div class="search-filter-group">
+                    <!-- Search Field -->
+                    <div class="input-search-wrapper">
+                        <svg class="search-icon-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" id="inventory-search" class="input-search" placeholder="Search by name, tag, SKU, user...">
+                    </div>
+
+                    <!-- Category Filter -->
+                    <select id="filter-category" class="select-filter">
+                        <option value="all">All Categories</option>
+                        <option value="Computer">Computer</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="Accessory">Accessory</option>
+                        <option value="Spare Parts">Spare Parts</option>
+                    </select>
+
+                    <!-- Status Filter -->
+                    <select id="filter-status" class="select-filter">
+                        <option value="all">All Statuses</option>
+                        <option value="Available">Available</option>
+                        <option value="Assigned">Assigned</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Retired">Retired</option>
+                    </select>
+                </div>
+
+                <!-- Export/Import & Adding Controls -->
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-secondary" id="export-csv-btn" title="Export current inventory list to CSV">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Export CSV
+                    </button>
+                    
+                    <label class="btn btn-secondary admin-only" style="cursor: pointer;" title="Import assets bulk list from CSV">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L4 8m4-4v12"></path></svg>
+                        Import CSV
+                        <input type="file" id="import-csv-file" accept=".csv" style="display: none;">
+                    </label>
+
+                    <button class="btn btn-primary admin-only" id="add-asset-btn">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                        Add Asset
+                    </button>
+                </div>
+            </section>
+
+            <!-- Core Data Grid -->
+            <section class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th id="th-tag">Asset Tag&nbsp;⇅</th>
+                            <th id="th-name">Asset Name&nbsp;⇅</th>
+                            <th id="th-category">Category&nbsp;⇅</th>
+                            <th id="th-details">Specifications</th>
+                            <th id="th-status">Status&nbsp;⇅</th>
+                            <th id="th-user">Assigned User</th>
+                            <th id="th-upgrades">Upgrades / Repairs</th>
+                            <th id="th-actions" style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body">
+                        <!-- Dynamic rows appended via app.js -->
+                    </tbody>
+                </table>
+                <div id="inventory-empty-state" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">🔍</div>
+                    <h3>No assets found</h3>
+                    <p>Try refining your search terms or filters, or add a new asset to get started.</p>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="pagination-bar" id="inventory-pagination" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-top: 1px solid var(--border-color); background: var(--bg-input); flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 13px; color: var(--text-secondary);">Show</span>
+                        <select id="pagination-limit" class="select-filter" style="min-width: 70px; padding: 6px 10px; font-size: 13px; margin-bottom: 0; height: 32px;">
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span id="pagination-info" style="font-size: 13px; color: var(--text-muted); margin-left: 8px;">Showing 0-0 of 0 assets</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button class="btn btn-secondary btn-sm" id="btn-page-prev" style="height: 32px; padding: 0 10px;">&laquo; Prev</button>
+                        <div id="pagination-pages-container" style="display: flex; gap: 4px;"></div>
+                        <button class="btn btn-secondary btn-sm" id="btn-page-next" style="height: 32px; padding: 0 10px;">Next &raquo;</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- ================= VENDORS TAB CONTENT ================= -->
+        <main class="tab-content" id="vendors-tab">
+            <section class="control-bar">
+                <div class="search-filter-group">
+                    <div class="input-search-wrapper">
+                        <svg class="search-icon-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" id="vendors-search" class="input-search" placeholder="Search vendors by name, contact, mobile...">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-secondary" id="export-vendors-csv-btn" title="Export vendors list to CSV">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Export CSV
+                    </button>
+                    
+                    <label class="btn btn-secondary admin-only" style="cursor: pointer;" title="Import vendors list from CSV">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L4 8m4-4v12"></path></svg>
+                        Import CSV
+                        <input type="file" id="import-vendors-csv-file" accept=".csv" style="display: none;">
+                    </label>
+
+                    <button class="btn btn-primary admin-only" id="add-vendor-btn">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                        Add Vendor
+                    </button>
+                </div>
+            </section>
+
+            <section class="grid-vendors" id="vendors-grid-container">
+                <!-- Dynamic cards appended via app.js -->
+            </section>
+            
+            <div id="vendors-empty-state" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">🏢</div>
+                <h3>No Vendors Registered</h3>
+                <p>Register office system and hardware providers to keep tracking vendor networks.</p>
+            </div>
+        </main>
+
+        <!-- ================= LOGS TAB CONTENT ================= -->
+        <main class="tab-content admin-only" id="logs-tab">
+            <section class="control-bar">
+                <div class="search-filter-group">
+                    <div class="input-search-wrapper">
+                        <svg class="search-icon-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" id="logs-search" class="input-search" placeholder="Search logs by tag, action, details...">
+                    </div>
+                    <select id="filter-log-type" class="select-filter">
+                        <option value="all">All Actions</option>
+                        <option value="Purchase">Purchase</option>
+                        <option value="Assignment">Assignment</option>
+                        <option value="Return">Return</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Status Change">Status Change</option>
+                    </select>
+                </div>
+                <div>
+                    <button class="btn btn-secondary btn-sm" id="clear-logs-btn">Clear Logs</button>
+                </div>
+            </section>
+
+            <section class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Action Type</th>
+                            <th>Asset Tag</th>
+                            <th>Asset Name</th>
+                            <th>Details</th>
+                            <th>Operator</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body">
+                        <!-- Dynamic rows appended via app.js -->
+                    </tbody>
+                </table>
+                <div id="logs-empty-state" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>Activity Log is Empty</h3>
+                    <p>Transactions and changes will populate automatically as actions occur.</p>
+                </div>
+            </section>
+        </main>
+        
+        <!-- ================= SETTINGS TAB CONTENT ================= -->
+        <main class="tab-content admin-only" id="settings-tab">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; width: 100%; margin-bottom: 24px;">
+                <!-- Security Settings (Change Password) -->
+                <div class="card-chart">
+                    <div class="card-title">
+                        <span>Security & Administrative Credentials</span>
+                        <svg width="18" height="18" fill="none" stroke="var(--color-primary)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    
+                    <form id="change-password-form" style="margin-top: 14px; display:flex; flex-direction:column; gap:12px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="change-password-role">User Role *</label>
+                            <select id="change-password-role" class="form-input" style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); cursor: pointer;" required>
+                                <option value="admin">Administrator (admin)</option>
+                                <option value="staff">Staff Member (staff)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="old-password">Current Password *</label>
+                            <input type="password" id="old-password" class="form-input" placeholder="Enter current password" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="new-password">New Password *</label>
+                            <input type="password" id="new-password" class="form-input" placeholder="Minimum 4 characters" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="confirm-password">Confirm New Password *</label>
+                            <input type="password" id="confirm-password" class="form-input" placeholder="Repeat new password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="margin-top:12px; align-self: flex-start; padding: 10px 20px;">Update Password</button>
+                    </form>
+                </div>
+
+                <!-- Database Administration -->
+                <div class="card-chart">
+                    <div class="card-title">
+                        <span>Database Operations</span>
+                        <svg width="18" height="18" fill="none" stroke="var(--color-danger)" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:16px; margin-top:14px; width: 100%;">
+                        <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color); display:flex; flex-direction:column; gap:8px;">
+                            <h4 style="font-family:var(--font-header); font-size:14.5px; font-weight:600; color:var(--text-primary);">Load Production Database</h4>
+                            <p style="font-size:12.5px; color:var(--text-secondary); line-height:1.4;">
+                                Restore your complete corporate database containing all 95 assets, computers, laptops, assigned staff, maintenance upgrades, and vendors.
+                            </p>
+                            <button class="btn btn-secondary btn-seed" id="settings-seed-btn" style="align-self: flex-start;">Restore Production Database (95 Assets)</button>
+                        </div>
+
+                        <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(239, 68, 68, 0.15); display:flex; flex-direction:column; gap:8px;">
+                            <h4 style="font-family:var(--font-header); font-size:14.5px; font-weight:600; color:var(--color-danger);">Reset Corporate Database</h4>
+                            <p style="font-size:12.5px; color:var(--text-secondary); line-height:1.4;">
+                                Wipes out all assets, employees, vendors list, and log details. <strong>This action is permanent.</strong>
+                            </p>
+                            <button class="btn btn-danger" id="settings-reset-btn" style="align-self: flex-start;">Reset Database</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; width: 100%;">
+                <!-- Inventory Categories Manager -->
+                <div class="card-chart">
+                    <div class="card-title">
+                        <span>Inventory Categories Manager</span>
+                        <svg width="18" height="18" fill="none" stroke="var(--color-primary)" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    </div>
+                    <form id="settings-category-form" style="margin-top: 14px; display:flex; gap:10px;">
+                        <input type="text" id="new-category-input" class="form-input" placeholder="e.g., Server, Monitor" required style="flex-grow:1; margin-bottom:0;">
+                        <button type="submit" class="btn btn-primary" style="padding: 10px 16px;">Add</button>
+                    </form>
+                    <div id="settings-categories-list" style="margin-top:14px; display:flex; flex-direction:column; gap:8px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                        <!-- Injected dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- Company Departments Manager -->
+                <div class="card-chart">
+                    <div class="card-title">
+                        <span>Company Departments Manager</span>
+                        <svg width="18" height="18" fill="none" stroke="var(--color-secondary)" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </div>
+                    <form id="settings-dept-form" style="margin-top: 14px; display:flex; gap:10px;">
+                        <input type="text" id="new-dept-input" class="form-input" placeholder="e.g., Legal, Security" required style="flex-grow:1; margin-bottom:0;">
+                        <button type="submit" class="btn btn-primary" style="padding: 10px 16px;">Add</button>
+                    </form>
+                    <div id="settings-depts-list" style="margin-top:14px; display:flex; flex-direction:column; gap:8px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                        <!-- Injected dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Tools & Synchronization -->
+            <div style="display:grid; grid-template-columns: 1fr; gap:24px; width: 100%; margin-top: 24px;">
+                <!-- Hardware Upgrade & Replacement Logs -->
+                <div class="card-chart" style="min-height: auto; height: fit-content;">
+                    <div class="card-title">
+                        <span>Hardware Upgrade & Replacement Logs</span>
+                        <svg width="18" height="18" fill="none" stroke="var(--color-warning)" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:12px; margin-top:14px; background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                        <p style="font-size:13px; color:var(--text-secondary); line-height:1.45;">
+                            ⚙️ <strong>CSV Import & Export Engine</strong> for bulk tracking of your hardware upgrade history. 
+                            Import/export the upgrade history logs, replacement costs, and maintenance pipeline transactions.
+                        </p>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button class="btn btn-secondary btn-sm" id="export-maint-csv-btn">Export Maintenance CSV</button>
+                            <label class="btn btn-secondary btn-sm" style="cursor: pointer; margin-bottom: 0;">
+                                Import Maintenance CSV
+                                <input type="file" id="import-maint-csv-file" accept=".csv" style="display: none;">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cloud Synchronization Panel -->
+                <div class="card-chart" style="min-height: auto; height: fit-content;">
+                    <div class="card-title">
+                        <span>Cloud Database Auto-Sync (Multi-Location Sync)</span>
+                        <svg width="18" height="18" fill="none" stroke="var(--color-success)" stroke-width="2" viewBox="0 0 24 24"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:12px; margin-top:14px; background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                        <p style="font-size:13px; color:var(--text-secondary); line-height:1.45;">
+                            ☁️ <strong>Enable Cloud Sync</strong> to automatically save your inventory database in the cloud. 
+                            Copy your unique **Sync Token** and paste it on any other computer/location's settings tab to access and sync the same database globally!
+                        </p>
+                        
+                        <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+                            <label class="form-label" for="sync-token-input">Your Cloud Sync Token (Secret Key)</label>
+                            <div style="display:flex; gap:10px; width:100%;">
+                                <input type="text" id="sync-token-input" class="form-input" placeholder="Generate a token or paste your token from another device" style="flex-grow:1; margin-bottom:0; font-family:monospace; letter-spacing:0.5px;" value="">
+                                <button type="button" class="btn btn-secondary" id="btn-copy-sync-token" style="padding:10px 14px;" title="Copy Sync Token">📋 Copy</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+                            <button type="button" class="btn btn-primary" id="btn-generate-sync-token">Generate Sync Token</button>
+                            <button type="button" class="btn btn-secondary" id="btn-connect-sync" style="border-color:var(--color-success); color:var(--color-success);">Connect & Sync</button>
+                            <button type="button" class="btn btn-danger" id="btn-disconnect-sync" style="display:none;">Disconnect Cloud Sync</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Dynamic Footer -->
+        <footer>
+            IMS IT Asset & Inventory Manager &copy; 2026. Designed for Integrated Marketing Services Ltd.
+        </footer>
+    </div>
+
+    <!-- ================= SLIDE-OUT ASSET DRAWER PANEL ================= -->
+    <div class="drawer-backdrop" id="asset-drawer-backdrop"></div>
+    <div class="drawer-panel" id="asset-drawer">
+        <div class="drawer-header">
+            <div>
+                <span class="asset-tag-pill" id="drawer-tag">IMS-TAG-XXX</span>
+                <h2 id="drawer-title" style="margin-top: 8px; font-family: var(--font-header);">Asset Name</h2>
+            </div>
+            <button class="drawer-close" id="drawer-close-btn">&times;</button>
+        </div>
+
+        <!-- Attached Media Photo -->
+        <div id="drawer-photo-container" style="display:none; text-align:center; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow:hidden; background:var(--bg-input);">
+            <img id="drawer-photo-img" src="" alt="Product Photo" style="width:100%; max-height:200px; object-fit:contain; transition: transform 0.3s; cursor: zoom-in;" onclick="openPhotoLightbox()">
+        </div>
+
+        <!-- Assignment Status Block -->
+        <div>
+            <h4 class="drawer-section-title">Assignment Status</h4>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                <div>
+                    <span class="status-badge" id="drawer-status">Available</span>
+                    <p id="drawer-assignment-desc" style="font-size: 13px; color: var(--text-secondary); margin-top: 6px;">Unassigned</p>
+                </div>
+                <div id="drawer-assignment-actions">
+                    <!-- Action buttons injected dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- System Specifications -->
+        <div>
+            <h4 class="drawer-section-title">Technical Specifications</h4>
+            <div class="drawer-meta-list">
+                <div class="meta-row">
+                    <span class="meta-label">Brand & Model</span>
+                    <span class="meta-val" id="drawer-brand-model">Dell XPS 15</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Serial Number</span>
+                    <span class="meta-val" id="drawer-serial">XXXXX</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Specifications</span>
+                    <span class="meta-val" id="drawer-specs" style="font-weight: normal; font-size: 13px; max-width: 250px;">-</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Valuation Cost</span>
+                    <span class="meta-val" id="drawer-price">৳0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase, Supplier & Invoice -->
+        <div>
+            <h4 class="drawer-section-title">Acquisition & Attachments</h4>
+            <div class="drawer-meta-list">
+                <div class="meta-row">
+                    <span class="meta-label">Supplier / Vendor</span>
+                    <span class="meta-val" id="drawer-vendor-name">-</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Vendor Mobile</span>
+                    <span class="meta-val" id="drawer-vendor-mobile" style="color:var(--color-primary); font-family: monospace;">-</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Purchase Date</span>
+                    <span class="meta-val" id="drawer-purchase-date">-</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Warranty Expiry</span>
+                    <span class="meta-val" id="drawer-warranty-expiry">-</span>
+                </div>
+                <!-- Invoice Row -->
+                <div class="meta-row" id="drawer-invoice-row" style="display:none; align-items:center; padding-top:12px; border-top:1px dashed var(--border-color);">
+                    <span class="meta-label" style="display:flex; align-items:center; gap:6px;">
+                        📄 Purchase Invoice
+                    </span>
+                    <button class="btn btn-secondary btn-sm" id="drawer-invoice-download-btn" style="padding: 4px 10px; font-size:12px;">View / Open</button>
+                </div>
+                <!-- Notes Row -->
+                <div class="meta-row" id="drawer-notes-row" style="display:none; flex-direction:column; align-items:flex-start; gap:4px; padding-top:12px; border-top:1px dashed var(--border-color);">
+                    <span class="meta-label">Asset Notes & Comments</span>
+                    <span class="meta-val" id="drawer-notes" style="font-weight: normal; font-size: 13px; text-align: left; max-width: 100%;">None</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignment History Timeline -->
+        <div>
+            <h4 class="drawer-section-title">Assignment History Timeline</h4>
+            <div class="timeline-container" id="drawer-timeline" style="max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                <!-- Dynamic timeline nodes -->
+            </div>
+        </div>
+
+        <!-- Hardware Maintenance Ledger -->
+        <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                <h4 class="drawer-section-title" style="margin-bottom:0;">Parts Replaced & Upgrades</h4>
+                <button class="btn btn-secondary btn-sm admin-only" id="btn-drawer-add-maintenance" style="padding: 3px 8px; font-size:11px;">+ Log Upgrade</button>
+            </div>
+            <div class="upgrade-log-list" id="drawer-maintenance-list">
+                <!-- Replaced parts logs injected dynamically -->
+            </div>
+        </div>
+
+        <!-- Action Grid at Bottom of Drawer -->
+        <div id="drawer-admin-footer" class="admin-only" style="margin-top:auto; padding-top:20px; border-top:1px solid var(--border-color); display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <button class="btn btn-secondary" id="drawer-edit-btn">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                Edit Asset Details
+            </button>
+            <button class="btn btn-danger" id="drawer-delete-btn">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Scrap / Delete
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= IMAGE EXPAND / LIGHTBOX ================= -->
+    <div class="modal-overlay" id="lightbox-overlay" style="z-index: 300;" onclick="closeModal('lightbox-overlay')">
+        <div style="position:relative; max-width:90%; max-height:90%;">
+            <img id="lightbox-img" src="" alt="Expanded Image" style="max-width:100%; max-height:80vh; border-radius:var(--radius-md); box-shadow:var(--shadow-lg);">
+            <button class="drawer-close" style="position:absolute; top:-40px; right:0; color:#fff; font-size:32px;">&times;</button>
+        </div>
+    </div>
+
+    <!-- ================= ADD / EDIT ASSET MODAL ================= -->
+    <div class="modal-overlay" id="asset-modal">
+        <div class="modal-card" style="width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="asset-modal-title">Register New Asset</h3>
+                <button class="drawer-close" style="font-size:28px;" onclick="closeModal('asset-modal')">&times;</button>
+            </div>
+            <form id="asset-form">
+                <input type="hidden" id="asset-form-id">
+                
+                <!-- Modal Tabs Navigation -->
+                <div class="modal-tabs">
+                    <button type="button" class="modal-tab-btn active" data-modal-tab="modal-tab-info">📋 General Info</button>
+                    <button type="button" class="modal-tab-btn" data-modal-tab="modal-tab-media">📁 Attachments</button>
+                    <button type="button" class="modal-tab-btn" data-modal-tab="modal-tab-notes">💬 Notes / Comments</button>
+                </div>
+
+                <!-- Tab 1: Info -->
+                <div class="modal-tab-content active" id="modal-tab-info">
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label class="form-label" for="asset-name">Asset Name *</label>
+                            <input type="text" id="asset-name" class="form-input" placeholder="e.g. Dell XPS 15" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="asset-tag">Asset Tag / SKU *</label>
+                            <input type="text" id="asset-tag" class="form-input" placeholder="e.g. IMS-LAP-024" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label class="form-label" for="asset-category">Category *</label>
+                            <select id="asset-category" class="form-select" required>
+                                <option value="Computer">Computer</option>
+                                <option value="Laptop">Laptop</option>
+                                <option value="Accessory">Accessory</option>
+                                <option value="Spare Parts">Spare Parts</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="asset-brand">Brand</label>
+                            <input type="text" id="asset-brand" class="form-input" placeholder="e.g. Dell, Logitech">
+                        </div>
+                    </div>
+
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label class="form-label" for="asset-model">Model Number</label>
+                            <input type="text" id="asset-model" class="form-input" placeholder="e.g. 9530">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="asset-serial">Serial Number</label>
+                            <input type="text" id="asset-serial" class="form-input" placeholder="e.g. SN-998811">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="asset-specs">Technical Specifications</label>
+                        <input type="text" id="asset-specs" class="form-input" placeholder="e.g. Intel i7, 16GB RAM, 512GB SSD">
+                    </div>
+
+                    <div class="form-group-row" style="margin-top:10px;">
+                        <div class="form-group">
+                            <label class="form-label" for="asset-price">Valuation Price (৳) *</label>
+                            <input type="number" id="asset-price" class="form-input" min="0" step="0.01" value="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="asset-vendor">Acquisition Vendor</label>
+                            <select id="asset-vendor" class="form-select">
+                                <!-- Dynamic select options -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label class="form-label" for="asset-purchase-date">Purchase Date *</label>
+                            <input type="date" id="asset-purchase-date" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="asset-warranty">Warranty Expiry</label>
+                            <input type="date" id="asset-warranty" class="form-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Attachments -->
+                <div class="modal-tab-content" id="modal-tab-media">
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+                                <span>Upload Device Picture</span>
+                                <span id="photo-file-status" style="font-size:11px; color:var(--text-muted);">None</span>
+                            </label>
+                            <label class="file-upload-zone" id="photo-upload-zone">
+                                <span>📁 Click to attach photo</span>
+                                <input type="file" id="asset-photo-input" accept="image/*" style="display: none;">
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+                                <span>Upload Invoice Document</span>
+                                <span id="invoice-file-status" style="font-size:11px; color:var(--text-muted);">None</span>
+                            </label>
+                            <label class="file-upload-zone" id="invoice-upload-zone">
+                                <span>📄 Click to attach invoice</span>
+                                <input type="file" id="asset-invoice-input" accept="image/*,application/pdf" style="display: none;">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Notes -->
+                <div class="modal-tab-content" id="modal-tab-notes">
+                    <div class="form-group" style="margin-bottom:16px;">
+                        <label class="form-label" for="asset-notes">Notes / Comments</label>
+                        <textarea id="asset-notes" class="form-textarea" rows="6" placeholder="e.g. Primary developer desktop. RAM customizable. Checked by audit."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('asset-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Asset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= DEPLOY / ASSIGN ASSET MODAL ================= -->
+    <div class="modal-overlay" id="assign-modal">
+        <div class="modal-card" style="width: 420px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Assign IT Workstation</h3>
+                <button class="drawer-close" style="font-size:28px;" onclick="closeModal('assign-modal')">&times;</button>
+            </div>
+            <form id="assign-form">
+                <input type="hidden" id="assign-form-asset-id">
+                <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 16px;">
+                    Select the IMS employee and their respective department to assign <strong id="assign-asset-name">Asset</strong>.
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label" for="assign-user">Select / Enter Employee Name *</label>
+                    <input type="text" id="assign-user" class="form-input" list="employees-list" placeholder="Start typing employee name..." required>
+                    <datalist id="employees-list">
+                        <!-- Populated dynamically via app.js -->
+                    </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="assign-dept">Department *</label>
+                    <select id="assign-dept" class="form-select" required>
+                        <option value="Software Engineering">Software Engineering</option>
+                        <option value="Human Resources">Human Resources</option>
+                        <option value="Finance & Accounts">Finance & Accounts</option>
+                        <option value="Marketing & Sales">Marketing & Sales</option>
+                        <option value="Operations">Operations</option>
+                        <option value="QA Engineering">QA Engineering</option>
+                        <option value="Administration">Administration</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('assign-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Complete Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= LOG HARDWARE UPGRADE / MAINTENANCE MODAL ================= -->
+    <div class="modal-overlay" id="maintenance-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="maintenance-modal-title">Log Hardware Upgrade / Replacement</h3>
+                <button class="drawer-close" style="font-size:28px;" onclick="closeModal('maintenance-modal')">&times;</button>
+            </div>
+            <form id="maintenance-form">
+                <input type="hidden" id="maintenance-form-asset-id">
+                <input type="hidden" id="maintenance-form-log-id">
+                
+                <div class="form-group">
+                    <label class="form-label">Target Workstation</label>
+                    <input type="text" id="maintenance-asset-display" class="form-input" readonly style="background:var(--border-color); opacity: 0.8;">
+                </div>
+
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label class="form-label" for="maint-part">Part Replaced / Upgraded *</label>
+                        <input type="text" id="maint-part" class="form-input" placeholder="e.g. SSD Swap, 16GB RAM Upgrade" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="maint-cost">Replacement Cost (৳) *</label>
+                        <input type="number" id="maint-cost" class="form-input" min="0" step="0.01" value="0.00" required>
+                    </div>
+                </div>
+
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label class="form-label" for="maint-vendor">Vendor Partner *</label>
+                        <select id="maint-vendor" class="form-select" required>
+                            <!-- Dynamic select options -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="maint-date">Date Performed *</label>
+                        <input type="date" id="maint-date" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="maint-status">Maintenance Status *</label>
+                    <select id="maint-status" class="form-select" required>
+                        <option value="In Progress" selected>In Progress</option>
+                        <option value="Awaiting Parts">Awaiting Parts</option>
+                        <option value="Unpaid">Unpaid</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="maint-desc">Details of Upgrade / Changed Part *</label>
+                    <input type="text" id="maint-desc" class="form-input" placeholder="e.g. Swapped defective 512GB SSD with fresh Crucial P3 1TB NVMe PCIe 4.0 SSD" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="maint-reason">Technical Reason for Upgrade *</label>
+                    <textarea id="maint-reason" class="form-textarea" rows="2" placeholder="e.g. Original storage disk corrupted / System performance upgrade required for database tools" required></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('maintenance-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Log Maintenance Part</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= ADD / EDIT VENDOR MODAL ================= -->
+    <div class="modal-overlay" id="vendor-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="vendor-modal-title">Register New Vendor</h3>
+                <button class="drawer-close" style="font-size:28px;" onclick="closeModal('vendor-modal')">&times;</button>
+            </div>
+            <form id="vendor-form">
+                <input type="hidden" id="vendor-form-id">
+                
+                <div class="form-group">
+                    <label class="form-label" for="vendor-name">Company Name *</label>
+                    <input type="text" id="vendor-name" class="form-input" placeholder="e.g. Elite Tech Support" required>
+                </div>
+
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label class="form-label" for="vendor-contact">Contact Person *</label>
+                        <input type="text" id="vendor-contact" class="form-input" placeholder="e.g. Tanvir Ahmed" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="vendor-mobile">Mobile Number *</label>
+                        <input type="tel" id="vendor-mobile" class="form-input" placeholder="e.g. +880-1711-223344" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="vendor-email">Email Address *</label>
+                    <input type="email" id="vendor-email" class="form-input" placeholder="e.g. support@elitetech.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="vendor-address">Office Address</label>
+                    <input type="text" id="vendor-address" class="form-input" placeholder="e.g. Multiplan Center, Dhaka">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="vendor-notes">Services & Notes (Supplied hardware terms)</label>
+                    <textarea id="vendor-notes" class="form-textarea" rows="2" placeholder="e.g. Dell business laptops distributor, provides 3-year standard manufacturer warranty parts replacement."></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('vendor-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Vendor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Seeding + Engine -->
+    <script src="demo-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

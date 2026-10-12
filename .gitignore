@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables & secrets (Neon connection strings)
+.env
+.env.local
+
+# Operating System Files
+.DS_Store
+Thumbs.db

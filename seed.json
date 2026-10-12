@@ -1,0 +1,9 @@
+{
+    vendors: DEFAULT_VENDORS,
+    employees: DEFAULT_EMPLOYEES,
+    categories: DEFAULT_CATEGORIES,
+    departments: DEFAULT_DEPARTMENTS,
+    assets: DEFAULT_ASSETS,
+    maintenance: DEFAULT_MAINTENANCE_LOGS,
+    transactions: DEFAULT_TRANSACTIONS
+}
