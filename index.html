@@ -447,11 +447,25 @@
 
                     <div style="display:flex; flex-direction:column; gap:16px; margin-top:14px; width: 100%;">
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color); display:flex; flex-direction:column; gap:8px;">
+                            <h4 style="font-family:var(--font-header); font-size:14.5px; font-weight:600; color:var(--color-primary);">1-Click Full System Backup & Migration</h4>
+                            <p style="font-size:12.5px; color:var(--text-secondary); line-height:1.4;">
+                                Export or import everything at once (all assets, all 6 vendors, repair logs, and company departments) in a single file to sync between your laptop and Render.
+                            </p>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
+                                <button type="button" class="btn btn-primary" id="btn-export-full-backup" style="font-size:13px; padding:8px 14px;">📦 Export Full System Backup</button>
+                                <label class="btn btn-secondary" style="font-size:13px; padding:8px 14px; cursor:pointer; margin-bottom:0;">
+                                    📥 Import Full System Backup
+                                    <input type="file" id="input-import-full-backup" accept=".json" style="display:none;">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color); display:flex; flex-direction:column; gap:8px;">
                             <h4 style="font-family:var(--font-header); font-size:14.5px; font-weight:600; color:var(--text-primary);">Load Production Database</h4>
                             <p style="font-size:12.5px; color:var(--text-secondary); line-height:1.4;">
-                                Restore your complete corporate database containing all 95 assets, computers, laptops, assigned staff, maintenance upgrades, and vendors.
+                                Restore your complete corporate database containing all 95 assets, 6 verified vendors, assigned staff, and maintenance upgrades.
                             </p>
-                            <button class="btn btn-secondary btn-seed" id="settings-seed-btn" style="align-self: flex-start;">Restore Production Database (95 Assets)</button>
+                            <button class="btn btn-secondary btn-seed" id="settings-seed-btn" style="align-self: flex-start;">Restore Production Database (95 Assets & 6 Vendors)</button>
                         </div>
 
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(239, 68, 68, 0.15); display:flex; flex-direction:column; gap:8px;">

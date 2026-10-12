@@ -504,6 +504,12 @@ function setupEventListeners() {
     if (DOM.exportMaintCsvBtn) DOM.exportMaintCsvBtn.addEventListener('click', exportMaintenanceToCSV);
     if (DOM.importMaintCsvFile) DOM.importMaintCsvFile.addEventListener('change', importMaintenanceFromCSV);
 
+    // Complete System Backup Controls (1-Click Migration)
+    const btnFullExport = document.getElementById('btn-export-full-backup');
+    if (btnFullExport) btnFullExport.addEventListener('click', exportFullSystemBackup);
+    const inputFullImport = document.getElementById('input-import-full-backup');
+    if (inputFullImport) inputFullImport.addEventListener('change', importFullSystemBackup);
+
     // Interactive Logo Customizer Triggers
     document.querySelectorAll('.clickable-logo').forEach(el => {
         el.addEventListener('click', () => {
@@ -2441,6 +2447,61 @@ function exportVendorsToCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+// ================= COMPLETE SYSTEM BACKUP (ALL-IN-ONE) =================
+function exportFullSystemBackup() {
+    const backupObj = {
+        version: "1.0",
+        exportedAt: new Date().toISOString(),
+        assets: state.assets,
+        vendors: state.vendors,
+        employees: state.employees,
+        maintenance: state.maintenance,
+        transactions: state.transactions,
+        categories: state.categories,
+        departments: state.departments
+    };
+    const jsonString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj, null, 2));
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", jsonString);
+    dlAnchor.setAttribute("download", `ims_complete_system_backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(dlAnchor);
+    dlAnchor.click();
+    dlAnchor.remove();
+}
+
+function importFullSystemBackup(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        try {
+            const data = JSON.parse(evt.target.result);
+            if (!data.assets || !data.vendors) {
+                alert("Invalid backup file. The selected file does not contain complete IMS inventory records.");
+                return;
+            }
+
+            state.assets = data.assets || [];
+            state.vendors = data.vendors || [];
+            state.employees = data.employees || [];
+            state.maintenance = data.maintenance || [];
+            state.transactions = data.transactions || [];
+            if (data.categories) state.categories = data.categories;
+            if (data.departments) state.departments = data.departments;
+
+            saveState();
+            renderAll();
+            alert(`🎉 Success! Complete system restored:\n• ${state.assets.length} Assets\n• ${state.vendors.length} Vendors\n• ${state.maintenance.length} Maintenance Logs\n\nAll records are saved locally and synced to your cloud database!`);
+        } catch (err) {
+            console.error(err);
+            alert("Error reading backup file. Please ensure it is a valid JSON file.");
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
 }
 
 function importVendorsFromCSV(e) {

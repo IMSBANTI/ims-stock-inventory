@@ -5,20 +5,56 @@ const DEFAULT_VENDORS = [
     {
         "id": "v-01",
         "name": "GOTech Computer",
-        "contactPerson": "Robin",
+        "contactPerson": "Robin (Sales Manager)",
         "mobile": "01912825341",
         "email": "gotechcomputerbd@gmail.com",
-        "address": "DCC Unique Complex Shop",
+        "address": "DCC Unique Complex Shop # 16 Gate 8 Banani Dhaka",
         "notes": ""
     },
     {
         "id": "v-02",
+        "name": "Global Brand",
+        "contactPerson": "Sarwar (Sales Manager)",
+        "mobile": "01325065745",
+        "email": "sarwar_apu@globalbrand.com",
+        "address": "House# 46 (2nd Floor), Road# 10, Block# E, Kamal Ataturk Avenue, Banani, Dhaka-1213.",
+        "notes": ""
+    },
+    {
+        "id": "v-03",
+        "name": "Four Star IT",
+        "contactPerson": "Asraful Shanto (Sales Manager)",
+        "mobile": "01844896921",
+        "email": "info.4starit@gmail.com",
+        "address": "IDB Branch, BCS Computer City, IDB Bhaban, Level 2, Shop No: SR-232, Agargaon, Dhaka:",
+        "notes": ""
+    },
+    {
+        "id": "v-04",
+        "name": "Star Tech Ltd",
+        "contactPerson": "Subhra Prakash (Sales Manager)",
+        "mobile": "01709995574",
+        "email": "subhra1301@startech.com.bd",
+        "address": "Banani Branch 156 concord colossem",
+        "notes": ""
+    },
+    {
+        "id": "v-05",
         "name": "Organ Technology BD",
-        "contactPerson": "Support",
-        "mobile": "",
-        "email": "",
-        "address": "Dhaka, Bangladesh",
-        "notes": "Display & hardware parts supplier"
+        "contactPerson": "Mahbub Emon (Sales Manager)",
+        "mobile": "01967103051",
+        "email": "organtechnogy19@gmail.com",
+        "address": "Suite # 258-59 Level # 2 Multiplan Elephant Road",
+        "notes": "Laptop parts"
+    },
+    {
+        "id": "v-06",
+        "name": "Sowda Technology",
+        "contactPerson": "Abdul Aziz Azad (Sales Manager)",
+        "mobile": "01766304591",
+        "email": "sowdabd122@gmail.com",
+        "address": "Shop 429 level 4 Multiplan Elephant Road",
+        "notes": "Refurbished Laptop seller"
     }
 ];
 
