@@ -24,7 +24,14 @@ if (process.env.DATABASE_URL) {
     try {
         pool = new Pool({
             connectionString: process.env.DATABASE_URL,
-            ssl: { rejectUnauthorized: false }
+            ssl: { rejectUnauthorized: false },
+            connectionTimeoutMillis: 15000,
+            idleTimeoutMillis: 30000,
+            max: 10
+        });
+        // Prevent Node.js process crash when Neon serverless suspends idle connections
+        pool.on('error', (err) => {
+            console.warn('[Neon PostgreSQL] Idle client disconnected (will auto-reconnect):', err.message);
         });
         console.log('[Neon PostgreSQL] Connection pool initialized.');
     } catch (err) {
@@ -33,6 +40,13 @@ if (process.env.DATABASE_URL) {
 } else {
     console.log('[Neon PostgreSQL] DATABASE_URL not set in environment. Running in local mode.');
 }
+
+process.on('unhandledRejection', (reason) => {
+    console.error('[Server] Unhandled Rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('[Server] Uncaught Exception:', err.message);
+});
 
 // Helper to seed Neon PostgreSQL if empty
 async function seedNeonDatabase() {
@@ -248,13 +262,18 @@ app.post('/api/generate-sync-token', async (req, res) => {
     }
 });
 
+// Fast healthcheck endpoint for Render
+app.get('/healthz', (req, res) => {
+    res.status(200).send('OK');
+});
+
 // Route everything to index.html for Single Page Application
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Start listening
-app.listen(PORT, () => {
+// Start listening on 0.0.0.0 for cloud compatibility
+app.listen(PORT, '0.0.0.0', () => {
     console.log('\n=============================================================');
     console.log('      IMS IT ASSET & INVENTORY MANAGER - HOSTING ONLINE      ');
     console.log('=============================================================\n');
