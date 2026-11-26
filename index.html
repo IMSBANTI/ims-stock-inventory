@@ -101,65 +101,109 @@
 
         <!-- ================= DASHBOARD TAB CONTENT ================= -->
         <main class="tab-content active" id="dashboard-tab">
-            <!-- KPI Cards Row -->
+            <!-- Modern Executive Greeting & Quick-Action Strip -->
+            <section class="dash-hero-strip">
+                <div class="dash-hero-left">
+                    <div class="dash-hero-title-row">
+                        <h2>Operations Overview</h2>
+                        <span class="dash-live-dot" title="Live database metrics"></span>
+                    </div>
+                    <p id="dash-live-summary" class="dash-hero-subtitle">Integrated Marketing Services Ltd. • Tracking company IT assets</p>
+                    <div class="dash-health-pills">
+                        <button type="button" class="health-pill health-pill-success" id="pill-available-stock" title="Click to view available stock">
+                            <span class="pill-dot"></span>
+                            <span id="pill-available-text">0 Ready in Stock</span>
+                        </button>
+                        <button type="button" class="health-pill health-pill-warning" id="pill-warranty-alerts" title="Click to review warranty alerts">
+                            <span class="pill-dot"></span>
+                            <span id="pill-warranty-text">0 Warranty Alerts</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="dash-hero-actions">
+                    <button type="button" class="btn btn-secondary btn-sm" id="dash-quick-export-btn" style="padding: 8px 14px;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Export CSV
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm admin-only" id="dash-quick-add-btn" style="padding: 8px 14px;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                        Add Asset
+                    </button>
+                </div>
+            </section>
+
+            <!-- KPI Cards Row (Compact 6-Column Single Row on Desktop) -->
             <section class="grid-kpis">
-                <div class="card-kpi">
+                <div class="card-kpi kpi-accent-red kpi-clickable" id="kpi-card-workstations" title="Click to view all assets">
                     <div class="kpi-header">
-                        <span>ACTIVE WORKSTATIONS</span>
-                        <div class="kpi-icon">💻</div>
+                        <span>WORKSTATIONS</span>
+                        <div class="kpi-icon kpi-icon-red">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>
+                        </div>
                     </div>
                     <div class="kpi-value" id="kpi-workstations">0</div>
-                    <div class="kpi-footer">Computers & Laptops deployed</div>
+                    <div class="kpi-footer">Computers &amp; Laptops</div>
                 </div>
-                <div class="card-kpi">
+                <div class="card-kpi kpi-accent-emerald kpi-clickable" id="kpi-card-deployment" title="Click to view assigned assets">
                     <div class="kpi-header">
                         <span>DEPLOYMENT RATE</span>
-                        <div class="kpi-icon">📈</div>
+                        <div class="kpi-icon kpi-icon-emerald">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"></path><path d="M17 7h4v4"></path></svg>
+                        </div>
                     </div>
                     <div class="kpi-value" id="kpi-deployment-rate">0%</div>
-                    <div class="kpi-footer" id="kpi-deployment-sub">Percentage of assigned devices</div>
+                    <div class="kpi-progress-track"><div class="kpi-progress-fill" id="kpi-deployment-bar" style="width: 0%;"></div></div>
+                    <div class="kpi-footer" id="kpi-deployment-sub">0 of 0 assigned</div>
                 </div>
-                <div class="card-kpi">
+                <div class="card-kpi kpi-accent-amber kpi-clickable" id="kpi-card-maintenance" title="Click to filter assets under maintenance">
                     <div class="kpi-header">
-                        <span>MAINTENANCE / REPAIRS</span>
-                        <div class="kpi-icon">⚙️</div>
+                        <span>MAINTENANCE</span>
+                        <div class="kpi-icon kpi-icon-amber">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"></path></svg>
+                        </div>
                     </div>
                     <div class="kpi-value" id="kpi-maintenance">0</div>
-                    <div class="kpi-footer">Assets undergoing parts change</div>
+                    <div class="kpi-footer">In active repair pipeline</div>
                 </div>
-                <div class="card-kpi">
+                <div class="card-kpi kpi-accent-purple kpi-clickable" id="kpi-card-vendors" title="Click to open Vendors directory">
                     <div class="kpi-header">
-                        <span>VENDOR NETWORK</span>
-                        <div class="kpi-icon">🤝</div>
+                        <span>VENDORS</span>
+                        <div class="kpi-icon kpi-icon-purple">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"></path></svg>
+                        </div>
                     </div>
                     <div class="kpi-value" id="kpi-vendors">0</div>
-                    <div class="kpi-footer">Registered system suppliers</div>
+                    <div class="kpi-footer">Registered suppliers</div>
                 </div>
-                <div class="card-kpi">
+                <div class="card-kpi kpi-accent-blue kpi-clickable" id="kpi-card-value" title="Click to view inventory valuation">
                     <div class="kpi-header">
-                        <span>TOTAL ASSET VALUE</span>
-                        <div class="kpi-icon">৳</div>
+                        <span>TOTAL VALUE</span>
+                        <div class="kpi-icon kpi-icon-blue">
+                            <span style="font-weight: 800; font-size: 15px; line-height: 1;">৳</span>
+                        </div>
                     </div>
                     <div class="kpi-value kpi-value-currency" id="kpi-total-value">৳0</div>
-                    <div class="kpi-footer">Combined inventory valuation</div>
+                    <div class="kpi-footer">Active inventory worth</div>
                 </div>
-                <div class="card-kpi">
+                <div class="card-kpi kpi-accent-indigo kpi-clickable" id="kpi-card-unpaid" title="Click to view maintenance bills">
                     <div class="kpi-header">
-                        <span>UNPAID MAINTENANCE</span>
-                        <div class="kpi-icon">🧾</div>
+                        <span>UNPAID BILLS</span>
+                        <div class="kpi-icon kpi-icon-indigo">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 14l6-6M9 8h.01M15 14h.01"></path><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"></path></svg>
+                        </div>
                     </div>
                     <div class="kpi-value kpi-value-currency" id="kpi-unpaid-cost" style="color: #6366f1;">৳0</div>
-                    <div class="kpi-footer" id="kpi-unpaid-count">0 pending vendor bills</div>
+                    <div class="kpi-footer" id="kpi-unpaid-count">0 pending bills</div>
                 </div>
             </section>
 
             <!-- Analytics and Charts Grid -->
             <section class="grid-analytics">
                 <!-- IT Asset Distribution by Department (Full Width Row) -->
-                <div class="card-chart department-card-wide" style="min-height: 340px;">
+                <div class="card-chart department-card-wide" style="min-height: 310px;">
                     <div class="card-title">
                         <span>IT Asset Distribution by Department</span>
-                        <span style="font-size: 12px; color: var(--text-muted);">Assigned Deployed Workstations</span>
+                        <span class="card-title-hint">Click any bar to filter inventory</span>
                     </div>
                     <div class="chart-wrapper">
                         <canvas id="department-chart"></canvas>
@@ -170,25 +214,25 @@
                 <div class="card-chart" style="display: flex; flex-direction: column;">
                     <div class="card-title">
                         <span>IT Asset Distribution by Category</span>
-                        <span style="font-size: 12px; color: var(--text-muted);">Physical Inventory Breakdown</span>
+                        <span class="card-title-hint">Click any category to filter</span>
                     </div>
-                    <div class="category-grid-layout" style="margin-top: 10px;">
-                        <div class="chart-wrapper" style="height: 220px; position: relative;">
+                    <div class="category-grid-layout" style="margin-top: 8px;">
+                        <div class="chart-wrapper" style="height: 225px; position: relative;">
                             <canvas id="category-chart"></canvas>
                         </div>
-                        <div id="category-details-list" style="max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; border-left: 1px solid var(--border-color); padding-left: 16px;">
+                        <div id="category-details-list" style="max-height: 225px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; border-left: 1px solid var(--border-color); padding-left: 14px;">
                             <!-- Dynamic detailed list injected via app.js -->
                         </div>
                     </div>
                 </div>
                 
                 <!-- Hardware Upgrade & Replacement Logs -->
-                <div class="card-chart" style="min-height: 380px; display: flex; flex-direction: column;">
+                <div class="card-chart" style="min-height: 360px; display: flex; flex-direction: column;">
                     <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <span>Hardware Upgrade & Replacement</span>
-                        <div style="display: flex; background: var(--bg-input); padding: 2px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                            <button type="button" class="btn btn-secondary btn-sm" id="btn-maint-tab-logs" style="padding: 2px 8px; font-size: 10.5px; border-radius: var(--radius-sm); border: none; background: var(--color-primary); color: white; cursor: pointer;">Logs</button>
-                            <button type="button" class="btn btn-secondary btn-sm" id="btn-maint-tab-cost" style="padding: 2px 8px; font-size: 10.5px; border-radius: var(--radius-sm); border: none; background: transparent; color: var(--text-secondary); cursor: pointer;">Monthly Cost</button>
+                        <span>Hardware Upgrade &amp; Replacement</span>
+                        <div class="segmented-control">
+                            <button type="button" class="seg-btn active" id="btn-maint-tab-logs">Logs</button>
+                            <button type="button" class="seg-btn" id="btn-maint-tab-cost">Monthly Cost</button>
                         </div>
                     </div>
                     <div style="flex-grow: 1; overflow-y: auto;" id="dashboard-maint-container">

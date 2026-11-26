@@ -1555,3 +1555,256 @@ footer {
         flex: 1 1 130px;
     }
 }
+
+
+/* ================= MODERN EXECUTIVE DASHBOARD DESIGN ================= */
+
+body {
+    background-image:
+        radial-gradient(at 8% 0%, rgba(236, 32, 40, 0.06) 0px, transparent 42%),
+        radial-gradient(at 92% 4%, rgba(59, 130, 246, 0.06) 0px, transparent 42%);
+    background-attachment: fixed;
+}
+
+[data-theme="light"] body {
+    background-image:
+        radial-gradient(at 8% 0%, rgba(236, 32, 40, 0.045) 0px, transparent 42%),
+        radial-gradient(at 92% 4%, rgba(99, 102, 241, 0.05) 0px, transparent 42%);
+}
+
+/* Top Executive Hero Strip */
+.dash-hero-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 20px;
+    background: var(--bg-card);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.dash-hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dash-hero-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dash-hero-title-row h2 {
+    font-family: var(--font-header);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--text-primary);
+}
+
+.dash-live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-success);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+    display: inline-block;
+}
+
+.dash-hero-subtitle {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+}
+
+.dash-health-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.health-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.health-pill .pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.health-pill-success {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--color-success);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+.health-pill-success:hover {
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.health-pill-warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--color-warning);
+    border-color: rgba(245, 158, 11, 0.25);
+}
+.health-pill-warning:hover {
+    background: rgba(245, 158, 11, 0.2);
+}
+
+.health-pill-danger {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--color-danger);
+    border-color: rgba(239, 68, 68, 0.28);
+}
+.health-pill-danger:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.dash-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Modern KPI Cards with Top Accent Bar & Tinted SVG Icons */
+.card-kpi {
+    padding: 15px 16px;
+    border-radius: 14px;
+}
+
+.card-kpi::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: 0.85;
+}
+
+.kpi-accent-red::before { background: linear-gradient(90deg, #ec2028, #f43f5e); }
+.kpi-accent-emerald::before { background: linear-gradient(90deg, #10b981, #34d399); }
+.kpi-accent-amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.kpi-accent-purple::before { background: linear-gradient(90deg, #8b5cf6, #a855f7); }
+.kpi-accent-blue::before { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
+.kpi-accent-indigo::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
+
+.kpi-clickable {
+    cursor: pointer;
+}
+
+.kpi-clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.kpi-value {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.4px;
+}
+
+.kpi-icon-red { background: rgba(236, 32, 40, 0.12); color: #ec2028; }
+.kpi-icon-emerald { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.kpi-icon-amber { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.kpi-icon-purple { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
+.kpi-icon-blue { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.kpi-icon-indigo { background: rgba(99, 102, 241, 0.12); color: #6366f1; }
+
+/* Inline Deployment Progress Bar */
+.kpi-progress-track {
+    width: 100%;
+    height: 5px;
+    border-radius: var(--radius-full);
+    background: var(--bg-input);
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.kpi-progress-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: linear-gradient(90deg, #10b981, #34d399);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Analytics Card Polish */
+.card-title-hint {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--bg-input);
+    padding: 3px 9px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+}
+
+.segmented-control {
+    display: inline-flex;
+    background: var(--bg-input);
+    padding: 3px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+    gap: 2px;
+}
+
+.seg-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.seg-btn:hover {
+    color: var(--text-primary);
+}
+
+.seg-btn.active {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.3);
+}
+
+.category-row-item {
+    border-bottom: 1px solid var(--border-color);
+    padding: 7px 8px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.category-row-item:hover {
+    background: var(--bg-input);
+    transform: translateX(3px);
+}
+
+.category-row-item:last-child {
+    border-bottom: none;
+}

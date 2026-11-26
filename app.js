@@ -114,8 +114,16 @@ const DOM = {
     syncStatusBadge: document.getElementById('sync-status-badge'),
 
     // Dashboard KPIs
+    dashLiveSummary: document.getElementById('dash-live-summary'),
+    pillAvailableStock: document.getElementById('pill-available-stock'),
+    pillAvailableText: document.getElementById('pill-available-text'),
+    pillWarrantyAlerts: document.getElementById('pill-warranty-alerts'),
+    pillWarrantyText: document.getElementById('pill-warranty-text'),
+    dashQuickAddBtn: document.getElementById('dash-quick-add-btn'),
+    dashQuickExportBtn: document.getElementById('dash-quick-export-btn'),
     kpiWorkstations: document.getElementById('kpi-workstations'),
     kpiDeploymentRate: document.getElementById('kpi-deployment-rate'),
+    kpiDeploymentBar: document.getElementById('kpi-deployment-bar'),
     kpiDeploymentSub: document.getElementById('kpi-deployment-sub'),
     kpiMaintenance: document.getElementById('kpi-maintenance'),
     kpiVendors: document.getElementById('kpi-vendors'),
@@ -834,6 +842,34 @@ function setupEventListeners() {
         });
     });
 
+    // Dashboard Quick Actions, Health Pills & Clickable KPIs
+    if (DOM.dashQuickAddBtn) DOM.dashQuickAddBtn.addEventListener('click', () => openAssetModal());
+    if (DOM.dashQuickExportBtn) DOM.dashQuickExportBtn.addEventListener('click', exportInventoryToCSV);
+    if (DOM.pillAvailableStock) {
+        DOM.pillAvailableStock.addEventListener('click', () => navigateToFilteredInventory({ status: 'Available' }));
+    }
+    if (DOM.pillWarrantyAlerts) {
+        DOM.pillWarrantyAlerts.addEventListener('click', () => navigateToFilteredInventory({}));
+    }
+
+    const kpiWorkCard = document.getElementById('kpi-card-workstations');
+    if (kpiWorkCard) kpiWorkCard.addEventListener('click', () => navigateToFilteredInventory({}));
+    const kpiDeployCard = document.getElementById('kpi-card-deployment');
+    if (kpiDeployCard) kpiDeployCard.addEventListener('click', () => navigateToFilteredInventory({ status: 'Assigned' }));
+    const kpiMaintCard = document.getElementById('kpi-card-maintenance');
+    if (kpiMaintCard) kpiMaintCard.addEventListener('click', () => navigateToFilteredInventory({ status: 'Maintenance' }));
+    const kpiVendorsCard = document.getElementById('kpi-card-vendors');
+    if (kpiVendorsCard) kpiVendorsCard.addEventListener('click', () => switchTab('vendors-tab'));
+    const kpiValueCard = document.getElementById('kpi-card-value');
+    if (kpiValueCard) kpiValueCard.addEventListener('click', () => navigateToFilteredInventory({}));
+    const kpiUnpaidCard = document.getElementById('kpi-card-unpaid');
+    if (kpiUnpaidCard) kpiUnpaidCard.addEventListener('click', () => {
+        switchMaintTab('logs');
+        if (DOM.dashboardMaintContainer) {
+            DOM.dashboardMaintContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
     // Global Escape key to close drawer and modals
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -841,6 +877,16 @@ function setupEventListeners() {
             document.querySelectorAll('.modal-overlay.active').forEach(m => closeModal(m.id));
         }
     });
+}
+
+function navigateToFilteredInventory({ status = 'all', category = 'all', department = 'all' } = {}) {
+    if (DOM.inventorySearch) DOM.inventorySearch.value = '';
+    if (DOM.filterStatus) DOM.filterStatus.value = status;
+    if (DOM.filterCategory) DOM.filterCategory.value = category;
+    if (DOM.filterDepartment) DOM.filterDepartment.value = department;
+    paginationConfig.currentPage = 1;
+    switchTab('inventory-tab');
+    renderInventoryTable();
 }
 
 // ================= THEME CONTROLLER =================
@@ -1096,10 +1142,14 @@ function renderDashboardKPIs() {
 
     const totalAssets = activeAssets.length;
     const assignedAssets = activeAssets.filter(a => a.status === 'Assigned').length;
+    const availableAssets = activeAssets.filter(a => a.status === 'Available').length;
     const rate = totalAssets > 0 ? Math.round((assignedAssets / totalAssets) * 100) : 0;
     DOM.kpiDeploymentRate.textContent = `${rate}%`;
+    if (DOM.kpiDeploymentBar) {
+        DOM.kpiDeploymentBar.style.width = `${rate}%`;
+    }
     if (DOM.kpiDeploymentSub) {
-        DOM.kpiDeploymentSub.textContent = `${assignedAssets} of ${totalAssets} active assets assigned`;
+        DOM.kpiDeploymentSub.textContent = `${assignedAssets} of ${totalAssets} assigned`;
     }
 
     const maintenanceCount = state.assets.filter(a => a.status === 'Maintenance').length;
@@ -1122,7 +1172,32 @@ function renderDashboardKPIs() {
         DOM.kpiUnpaidCost.title = formatTaka(unpaidTotal);
     }
     if (DOM.kpiUnpaidCount) {
-        DOM.kpiUnpaidCount.textContent = `${unpaidLogs.length} unpaid vendor ${unpaidLogs.length === 1 ? 'bill' : 'bills'}`;
+        DOM.kpiUnpaidCount.textContent = `${unpaidLogs.length} pending ${unpaidLogs.length === 1 ? 'bill' : 'bills'}`;
+    }
+
+    // Hero Strip Live Summary & Health Pills
+    if (DOM.dashLiveSummary) {
+        const retiredCount = state.assets.filter(a => a.status === 'Retired').length;
+        const retiredPart = retiredCount > 0 ? ` • ${retiredCount} retired` : '';
+        DOM.dashLiveSummary.textContent = `Integrated Marketing Services Ltd. • ${totalAssets} active assets across ${state.departments.length} departments${retiredPart}`;
+    }
+    if (DOM.pillAvailableText) {
+        DOM.pillAvailableText.textContent = `${availableAssets} Ready in Stock`;
+    }
+    if (DOM.pillWarrantyText && DOM.pillWarrantyAlerts) {
+        let expiredCount = 0;
+        let expiringSoonCount = 0;
+        activeAssets.forEach(a => {
+            const w = getWarrantyStatus(a.warrantyExpiry);
+            if (!w) return;
+            if (w.cls === 'warranty-expired') expiredCount++;
+            else if (w.cls === 'warranty-expiring') expiringSoonCount++;
+        });
+        const totalAlerts = expiredCount + expiringSoonCount;
+        DOM.pillWarrantyAlerts.className = 'health-pill ' + (expiredCount > 0 ? 'health-pill-danger' : (expiringSoonCount > 0 ? 'health-pill-warning' : 'health-pill-success'));
+        DOM.pillWarrantyText.textContent = totalAlerts > 0
+            ? `${expiredCount} Expired / ${expiringSoonCount} Expiring Warranties`
+            : 'All Warranties Healthy';
     }
 }
 
@@ -1213,18 +1288,14 @@ function renderDashboardMaintenanceLogs() {
 function switchMaintTab(tab) {
     activeMaintTab = tab;
     if (tab === 'logs') {
-        DOM.btnMaintTabLogs.style.background = 'var(--color-primary)';
-        DOM.btnMaintTabLogs.style.color = 'white';
-        DOM.btnMaintTabCost.style.background = 'transparent';
-        DOM.btnMaintTabCost.style.color = 'var(--text-secondary)';
+        DOM.btnMaintTabLogs.classList.add('active');
+        DOM.btnMaintTabCost.classList.remove('active');
         DOM.dashboardMaintContainer.style.display = 'block';
         DOM.dashboardMaintCostContainer.style.display = 'none';
         renderDashboardMaintenanceLogs();
     } else {
-        DOM.btnMaintTabCost.style.background = 'var(--color-primary)';
-        DOM.btnMaintTabCost.style.color = 'white';
-        DOM.btnMaintTabLogs.style.background = 'transparent';
-        DOM.btnMaintTabLogs.style.color = 'var(--text-secondary)';
+        DOM.btnMaintTabCost.classList.add('active');
+        DOM.btnMaintTabLogs.classList.remove('active');
         DOM.dashboardMaintContainer.style.display = 'none';
         DOM.dashboardMaintCostContainer.style.display = 'block';
         if (DOM.dashboardMaintPagination) DOM.dashboardMaintPagination.style.display = 'none';
@@ -1329,10 +1400,12 @@ function renderDashboardCharts() {
 
     const detailsContainer = document.getElementById('category-details-list');
     if (detailsContainer) {
-        let detailsHtml = '';
+        detailsContainer.innerHTML = '';
+        let renderedRows = 0;
         categoryLabels.forEach((cat, index) => {
             const total = counts[cat];
             if (total === 0) return;
+            renderedRows++;
 
             const breakdown = statusBreakdown[cat];
             const color = categoryColors[index % categoryColors.length];
@@ -1345,22 +1418,27 @@ function renderDashboardCharts() {
 
             const statusString = parts.length > 0 ? parts.join(' • ') : 'No items';
 
-            detailsHtml += `
-                <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 6px; margin-bottom: 6px; display:flex; flex-direction:column; gap:2px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:600; font-size:12.5px; display:flex; align-items:center; gap:6px; color:var(--text-primary);">
-                            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:${color};"></span>
-                            ${escapeHtml(cat)}
-                        </span>
-                        <span style="font-weight:600; font-size:12px; color:var(--text-secondary);">${total} units</span>
-                    </div>
-                    <div style="font-size:11px; color:var(--text-secondary); padding-left: 14px; line-height: 1.3;">
-                        ${statusString}
-                    </div>
+            const rowEl = document.createElement('div');
+            rowEl.className = 'category-row-item';
+            rowEl.title = `Filter inventory by ${cat}`;
+            rowEl.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:600; font-size:12.5px; display:flex; align-items:center; gap:6px; color:var(--text-primary);">
+                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:${color};"></span>
+                        ${escapeHtml(cat)}
+                    </span>
+                    <span style="font-weight:600; font-size:12px; color:var(--text-secondary);">${total} units</span>
+                </div>
+                <div style="font-size:11px; color:var(--text-secondary); padding-left: 14px; line-height: 1.3;">
+                    ${statusString}
                 </div>
             `;
+            rowEl.addEventListener('click', () => navigateToFilteredInventory({ category: cat }));
+            detailsContainer.appendChild(rowEl);
         });
-        detailsContainer.innerHTML = detailsHtml || '<div style="font-size:12px; color:var(--text-muted); text-align:center; padding-top:20px;">No categories recorded</div>';
+        if (renderedRows === 0) {
+            detailsContainer.innerHTML = '<div style="font-size:12px; color:var(--text-muted); text-align:center; padding-top:20px;">No categories recorded</div>';
+        }
     }
 
     if (categoryChart) categoryChart.destroy();
@@ -1376,7 +1454,7 @@ function renderDashboardCharts() {
                     backgroundColor: categoryColors,
                     borderWidth: isDark ? 2 : 1,
                     borderColor: isDark ? '#101625' : '#ffffff',
-                    hoverOffset: 12
+                    hoverOffset: 10
                 }]
             },
             plugins: [{
@@ -1402,6 +1480,17 @@ function renderDashboardCharts() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                onClick: (_evt, elements) => {
+                    if (elements && elements.length > 0) {
+                        const clickedCat = categoryLabels[elements[0].index];
+                        if (clickedCat) navigateToFilteredInventory({ category: clickedCat });
+                    }
+                },
+                onHover: (evt, elements) => {
+                    if (evt.native && evt.native.target) {
+                        evt.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    }
+                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -1427,7 +1516,7 @@ function renderDashboardCharts() {
         });
     }
 
-    // 2. Department Chart
+    // 2. Department Chart (Sorted Highest -> Lowest, Click-to-Filter)
     const deptCounts = {};
     state.departments.forEach(dept => { deptCounts[dept] = 0; });
 
@@ -1441,14 +1530,15 @@ function renderDashboardCharts() {
         }
     });
 
+    const sortedDeptEntries = Object.entries(deptCounts).sort((a, b) => b[1] - a[1]);
     if (unassignedCount > 0) {
-        deptCounts['Unassigned'] = unassignedCount;
+        sortedDeptEntries.push(['Unassigned', unassignedCount]);
     }
 
-    const deptLabels = Object.keys(deptCounts);
-    const deptData = Object.values(deptCounts);
+    const deptLabels = sortedDeptEntries.map(e => e[0]);
+    const deptData = sortedDeptEntries.map(e => e[1]);
     const deptColors = deptLabels.map((label, i) => {
-        if (label === 'Unassigned') return isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
+        if (label === 'Unassigned') return isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(100, 116, 139, 0.25)';
         return coreColors[(i + 1) % coreColors.length];
     });
 
@@ -1465,15 +1555,30 @@ function renderDashboardCharts() {
                     data: deptData,
                     indexAxis: 'y',
                     backgroundColor: deptColors,
-                    borderWidth: isDark ? 2 : 1,
-                    borderColor: isDark ? '#101625' : '#ffffff',
-                    borderRadius: 4
+                    borderWidth: 0,
+                    borderRadius: 6,
+                    maxBarThickness: 18
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 indexAxis: 'y',
+                onClick: (_evt, elements) => {
+                    if (elements && elements.length > 0) {
+                        const clickedDept = deptLabels[elements[0].index];
+                        if (clickedDept === 'Unassigned') {
+                            navigateToFilteredInventory({ department: '__unassigned__' });
+                        } else if (clickedDept) {
+                            navigateToFilteredInventory({ department: clickedDept });
+                        }
+                    }
+                },
+                onHover: (evt, elements) => {
+                    if (evt.native && evt.native.target) {
+                        evt.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    }
+                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
