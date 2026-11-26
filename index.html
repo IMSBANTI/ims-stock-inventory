@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IMS IT Asset & Inventory Manager</title>
-    <meta name="description" content="State-of-the-art office inventory and assignment tracker for IMS. Manage computers, laptops, accessories, parts replacements, and vendors.">
+    <meta name="description" content="Office inventory and assignment tracker for IMS. Manage computers, laptops, accessories, parts replacements, and vendors.">
     <link rel="stylesheet" href="styles.css">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,7 +15,7 @@
     <div class="login-overlay active" id="login-overlay">
         <div class="login-card">
             <div class="login-logo">
-                <div class="logo-icon clickable-logo" id="login-logo-display" style="width: 50px; height: 50px; font-size: 24px;" title="Click to upload custom corporate logo image"><img src="image/IMS-Logo-C.png" alt="IMS Logo" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;"></div>
+                <div class="logo-icon clickable-logo" id="login-logo-display" style="width: 50px; height: 50px; font-size: 24px;" title="IMS Corporate Logo"><img src="image/IMS-Logo-C.png" alt="IMS Logo" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;"></div>
                 <h2 style="font-family: var(--font-header); font-weight: 700; margin-top: 12px; background: linear-gradient(90deg, #fff, var(--color-primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">IMS Asset Manager</h2>
                 <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Integrated Marketing Services Ltd.</p>
             </div>
@@ -23,40 +23,22 @@
             <form id="login-form">
                 <div class="form-group" style="text-align: left;">
                     <label class="form-label" for="login-username">Username</label>
-                    <input type="text" id="login-username" class="form-input" placeholder="e.g. admin or staff" required>
+                    <input type="text" id="login-username" class="form-input" placeholder="Enter username (admin or staff)" autocomplete="username" required>
                 </div>
                 
                 <div class="form-group" style="text-align: left;">
                     <label class="form-label" for="login-password">Password</label>
-                    <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
-                </div>
-                
-                <div style="font-size:12px; color:var(--text-muted); background:var(--bg-app); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); text-align:left; line-height:1.4; margin-bottom: 20px;">
-                    💡 <strong>Quick Credentials:</strong><br>
-                    • Admin Access: <code>admin</code> / <code>queenbee</code><br>
-                    • Staff Access: <code>staff</code> / <code>ims</code>
+                    <input type="password" id="login-password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; font-size:15px; padding: 12px;">Sign In</button>
+                <div id="login-error-msg" class="login-error-box" style="display: none;"></div>
+
+                <button type="submit" id="login-submit-btn" class="btn btn-primary" style="width: 100%; font-size:15px; padding: 12px; margin-top: 4px;">Sign In</button>
             </form>
 
-            <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px; text-align: center; display: flex; flex-direction: column; gap: 10px;">
-                <a href="#" id="login-sync-toggle" style="font-size: 13px; color: var(--color-primary); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                    Connect via Cloud Sync Token
-                </a>
-                <a href="#" id="login-reset-password-btn" style="font-size: 12px; color: var(--text-muted); text-decoration: underline; cursor: pointer;">
-                    🔑 Auto-fill / Reset Admin Password (queenbee)
-                </a>
-            </div>
-            
-            <div id="login-sync-container" style="display: none; margin-top: 12px; text-align: left; background: var(--bg-app); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label class="form-label" for="login-sync-token" style="font-size: 11px;">Cloud Sync Token</label>
-                    <input type="text" id="login-sync-token" class="form-input" placeholder="Enter alphanumeric token" style="font-size: 12px; padding: 8px;">
-                </div>
-                <button type="button" id="btn-login-connect-sync" class="btn btn-secondary" style="width: 100%; font-size:13px; padding: 8px; justify-content: center;">Connect & Load Database</button>
-            </div>
+            <p style="margin-top: 18px; font-size: 11.5px; color: var(--text-muted); line-height: 1.45;">
+                🔒 Authorized IMS personnel only. Contact your IT Administrator for access credentials.
+            </p>
         </div>
     </div>
 
@@ -101,7 +83,7 @@
             <!-- Actions and Theme Controls -->
             <div class="nav-controls">
                 <!-- Cloud Sync Status Badge -->
-                <div class="sync-badge sync-disabled" id="sync-status-badge">LOCAL VIEW</div>
+                <div class="sync-badge sync-disabled" id="sync-status-badge" title="Database connection status">LOCAL VIEW</div>
 
                 <!-- Privilege Indicator Display -->
                 <div class="role-badge" id="role-display-badge">ADMIN VIEW</div>
@@ -135,7 +117,7 @@
                         <div class="kpi-icon">📈</div>
                     </div>
                     <div class="kpi-value" id="kpi-deployment-rate">0%</div>
-                    <div class="kpi-footer">Percentage of assigned devices</div>
+                    <div class="kpi-footer" id="kpi-deployment-sub">Percentage of assigned devices</div>
                 </div>
                 <div class="card-kpi">
                     <div class="kpi-header">
@@ -152,6 +134,22 @@
                     </div>
                     <div class="kpi-value" id="kpi-vendors">0</div>
                     <div class="kpi-footer">Registered system suppliers</div>
+                </div>
+                <div class="card-kpi">
+                    <div class="kpi-header">
+                        <span>TOTAL ASSET VALUE</span>
+                        <div class="kpi-icon">৳</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-total-value" style="font-size: 26px;">৳0</div>
+                    <div class="kpi-footer">Combined inventory valuation</div>
+                </div>
+                <div class="card-kpi">
+                    <div class="kpi-header">
+                        <span>UNPAID MAINTENANCE</span>
+                        <div class="kpi-icon">🧾</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-unpaid-cost" style="font-size: 26px; color: #6366f1;">৳0</div>
+                    <div class="kpi-footer" id="kpi-unpaid-count">0 pending vendor bills</div>
                 </div>
             </section>
 
@@ -227,16 +225,17 @@
                         <svg class="search-icon-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
-                        <input type="text" id="inventory-search" class="input-search" placeholder="Search by name, tag, SKU, user...">
+                        <input type="text" id="inventory-search" class="input-search" placeholder="Search tag, name, user, dept, serial...">
                     </div>
 
                     <!-- Category Filter -->
                     <select id="filter-category" class="select-filter">
                         <option value="all">All Categories</option>
-                        <option value="Computer">Computer</option>
-                        <option value="Laptop">Laptop</option>
-                        <option value="Accessory">Accessory</option>
-                        <option value="Spare Parts">Spare Parts</option>
+                    </select>
+
+                    <!-- Department Filter -->
+                    <select id="filter-department" class="select-filter">
+                        <option value="all">All Departments</option>
                     </select>
 
                     <!-- Status Filter -->
@@ -250,7 +249,7 @@
                 </div>
 
                 <!-- Export/Import & Adding Controls -->
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div class="action-btn-cluster">
                     <button class="btn btn-secondary" id="export-csv-btn" title="Export current inventory list to CSV">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         Export CSV
@@ -274,12 +273,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th id="th-tag">Asset Tag&nbsp;⇅</th>
+                            <th id="th-tag">Asset Tag&nbsp;▲</th>
                             <th id="th-name">Asset Name&nbsp;⇅</th>
                             <th id="th-category">Category&nbsp;⇅</th>
                             <th id="th-details">Specifications</th>
                             <th id="th-status">Status&nbsp;⇅</th>
-                            <th id="th-user">Assigned User</th>
+                            <th id="th-user">Assigned User&nbsp;⇅</th>
                             <th id="th-upgrades">Upgrades / Repairs</th>
                             <th id="th-actions" style="text-align: right;">Actions</th>
                         </tr>
@@ -325,7 +324,7 @@
                         <input type="text" id="vendors-search" class="input-search" placeholder="Search vendors by name, contact, mobile...">
                     </div>
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div class="action-btn-cluster">
                     <button class="btn btn-secondary" id="export-vendors-csv-btn" title="Export vendors list to CSV">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         Export CSV
@@ -400,12 +399,20 @@
                     <h3>Activity Log is Empty</h3>
                     <p>Transactions and changes will populate automatically as actions occur.</p>
                 </div>
+                <!-- Activity Trail Pagination -->
+                <div class="pagination-bar" id="logs-pagination" style="display: none; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 1px solid var(--border-color); background: var(--bg-input); flex-wrap: wrap; gap: 12px;">
+                    <span id="logs-pagination-info" style="font-size: 13px; color: var(--text-muted);">Showing 0-0 of 0 logs</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button class="btn btn-secondary btn-sm" id="btn-logs-prev">&laquo; Prev</button>
+                        <button class="btn btn-secondary btn-sm" id="btn-logs-next">Next &raquo;</button>
+                    </div>
+                </div>
             </section>
         </main>
         
         <!-- ================= SETTINGS TAB CONTENT ================= -->
         <main class="tab-content admin-only" id="settings-tab">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; width: 100%; margin-bottom: 24px;">
+            <div class="settings-grid-2col" style="margin-bottom: 24px;">
                 <!-- Security Settings (Change Password) -->
                 <div class="card-chart">
                     <div class="card-title">
@@ -422,8 +429,8 @@
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label" for="old-password">Current Password *</label>
-                            <input type="password" id="old-password" class="form-input" placeholder="Enter current password" required>
+                            <label class="form-label" for="old-password">Current Admin Password *</label>
+                            <input type="password" id="old-password" class="form-input" placeholder="Enter current Admin password" required>
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
                             <label class="form-label" for="new-password">New Password *</label>
@@ -449,7 +456,7 @@
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color); display:flex; flex-direction:column; gap:8px;">
                             <h4 style="font-family:var(--font-header); font-size:14.5px; font-weight:600; color:var(--color-primary);">1-Click Full System Backup & Migration</h4>
                             <p style="font-size:12.5px; color:var(--text-secondary); line-height:1.4;">
-                                Export or import everything at once (all assets, all 6 vendors, repair logs, and company departments) in a single file to sync between your laptop and Render.
+                                Export or import everything at once (all assets, vendors, repair logs, and company departments) in a single JSON file.
                             </p>
                             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
                                 <button type="button" class="btn btn-primary" id="btn-export-full-backup" style="font-size:13px; padding:8px 14px;">📦 Export Full System Backup</button>
@@ -463,9 +470,9 @@
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color); display:flex; flex-direction:column; gap:8px;">
                             <h4 style="font-family:var(--font-header); font-size:14.5px; font-weight:600; color:var(--text-primary);">Load Production Database</h4>
                             <p style="font-size:12.5px; color:var(--text-secondary); line-height:1.4;">
-                                Restore your complete corporate database containing all 95 assets, 6 verified vendors, assigned staff, and maintenance upgrades.
+                                Restore the bundled baseline database containing 95 assets, 6 verified vendors, assigned staff, and maintenance logs.
                             </p>
-                            <button class="btn btn-secondary btn-seed" id="settings-seed-btn" style="align-self: flex-start;">Restore Production Database (95 Assets & 6 Vendors)</button>
+                            <button class="btn btn-secondary btn-seed" id="settings-seed-btn" style="align-self: flex-start;">Restore Baseline Database</button>
                         </div>
 
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(239, 68, 68, 0.15); display:flex; flex-direction:column; gap:8px;">
@@ -479,7 +486,7 @@
                 </div>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; width: 100%;">
+            <div class="settings-grid-2col">
                 <!-- Inventory Categories Manager -->
                 <div class="card-chart">
                     <div class="card-title">
@@ -511,22 +518,20 @@
                 </div>
             </div>
 
-            <!-- Advanced Tools & Synchronization -->
-            <div style="display:grid; grid-template-columns: 1fr; gap:24px; width: 100%; margin-top: 24px;">
-                <!-- Hardware Upgrade & Replacement Logs -->
+            <!-- Advanced Tools & Cloud Status -->
+            <div class="settings-grid-2col" style="margin-top: 24px;">
+                <!-- Hardware Upgrade & Replacement Logs CSV -->
                 <div class="card-chart" style="min-height: auto; height: fit-content;">
                     <div class="card-title">
-                        <span>Hardware Upgrade & Replacement Logs</span>
+                        <span>Hardware Upgrade & Replacement CSV</span>
                         <svg width="18" height="18" fill="none" stroke="var(--color-warning)" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     </div>
 
                     <div style="display:flex; flex-direction:column; gap:12px; margin-top:14px; background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
                         <p style="font-size:13px; color:var(--text-secondary); line-height:1.45;">
-                            ⚙️ <strong>CSV Import & Export Engine</strong> for bulk tracking of your hardware upgrade history. 
-                            Import/export the upgrade history logs, replacement costs, and maintenance pipeline transactions.
+                            ⚙️ Bulk export or import hardware upgrade history, replacement costs, and repair pipeline records.
                         </p>
-                        
-                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px;">
                             <button class="btn btn-secondary btn-sm" id="export-maint-csv-btn">Export Maintenance CSV</button>
                             <label class="btn btn-secondary btn-sm" style="cursor: pointer; margin-bottom: 0;">
                                 Import Maintenance CSV
@@ -536,31 +541,20 @@
                     </div>
                 </div>
 
-                <!-- Cloud Synchronization Panel -->
+                <!-- Neon PostgreSQL Cloud Status Panel -->
                 <div class="card-chart" style="min-height: auto; height: fit-content;">
                     <div class="card-title">
-                        <span>Cloud Database Auto-Sync (Multi-Location Sync)</span>
+                        <span>Neon PostgreSQL Cloud Sync</span>
                         <svg width="18" height="18" fill="none" stroke="var(--color-success)" stroke-width="2" viewBox="0 0 24 24"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
                     </div>
                     
                     <div style="display:flex; flex-direction:column; gap:12px; margin-top:14px; background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
-                        <p style="font-size:13px; color:var(--text-secondary); line-height:1.45;">
-                            ☁️ <strong>Enable Cloud Sync</strong> to automatically save your inventory database in the cloud. 
-                            Copy your unique **Sync Token** and paste it on any other computer/location's settings tab to access and sync the same database globally!
+                        <p id="neon-sync-details" style="font-size:13px; color:var(--text-secondary); line-height:1.45;">
+                            Checking cloud database connection...
                         </p>
-                        
-                        <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
-                            <label class="form-label" for="sync-token-input">Your Cloud Sync Token (Secret Key)</label>
-                            <div style="display:flex; gap:10px; width:100%;">
-                                <input type="text" id="sync-token-input" class="form-input" placeholder="Generate a token or paste your token from another device" style="flex-grow:1; margin-bottom:0; font-family:monospace; letter-spacing:0.5px;" value="">
-                                <button type="button" class="btn btn-secondary" id="btn-copy-sync-token" style="padding:10px 14px;" title="Copy Sync Token">📋 Copy</button>
-                            </div>
-                        </div>
-
-                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-                            <button type="button" class="btn btn-primary" id="btn-generate-sync-token">Generate Sync Token</button>
-                            <button type="button" class="btn btn-secondary" id="btn-connect-sync" style="border-color:var(--color-success); color:var(--color-success);">Connect & Sync</button>
-                            <button type="button" class="btn btn-danger" id="btn-disconnect-sync" style="display:none;">Disconnect Cloud Sync</button>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-neon-pull">⬇️ Refresh from Cloud</button>
+                            <button type="button" class="btn btn-primary btn-sm" id="btn-neon-push">⬆️ Force Save to Cloud</button>
                         </div>
                     </div>
                 </div>
@@ -592,12 +586,12 @@
         <!-- Assignment Status Block -->
         <div>
             <h4 class="drawer-section-title">Assignment Status</h4>
-            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; background:var(--bg-input); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
                 <div>
                     <span class="status-badge" id="drawer-status">Available</span>
                     <p id="drawer-assignment-desc" style="font-size: 13px; color: var(--text-secondary); margin-top: 6px;">Unassigned</p>
                 </div>
-                <div id="drawer-assignment-actions">
+                <div id="drawer-assignment-actions" style="flex-shrink:0;">
                     <!-- Action buttons injected dynamically -->
                 </div>
             </div>
@@ -609,11 +603,11 @@
             <div class="drawer-meta-list">
                 <div class="meta-row">
                     <span class="meta-label">Brand & Model</span>
-                    <span class="meta-val" id="drawer-brand-model">Dell XPS 15</span>
+                    <span class="meta-val" id="drawer-brand-model">-</span>
                 </div>
                 <div class="meta-row">
                     <span class="meta-label">Serial Number</span>
-                    <span class="meta-val" id="drawer-serial">XXXXX</span>
+                    <span class="meta-val" id="drawer-serial">-</span>
                 </div>
                 <div class="meta-row">
                     <span class="meta-label">Specifications</span>
@@ -642,9 +636,13 @@
                     <span class="meta-label">Purchase Date</span>
                     <span class="meta-val" id="drawer-purchase-date">-</span>
                 </div>
-                <div class="meta-row">
+                <div class="meta-row" style="align-items: center;">
                     <span class="meta-label">Warranty Expiry</span>
-                    <span class="meta-val" id="drawer-warranty-expiry">-</span>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                        <span class="meta-val" id="drawer-warranty-expiry">-</span>
+                        <span id="drawer-warranty-badge"></span>
+                        <button type="button" class="btn btn-secondary btn-sm admin-only" id="btn-drawer-extend-warranty" style="padding: 2px 7px; font-size: 10.5px;">Extend</button>
+                    </div>
                 </div>
                 <!-- Invoice Row -->
                 <div class="meta-row" id="drawer-invoice-row" style="display:none; align-items:center; padding-top:12px; border-top:1px dashed var(--border-color);">
@@ -656,7 +654,7 @@
                 <!-- Notes Row -->
                 <div class="meta-row" id="drawer-notes-row" style="display:none; flex-direction:column; align-items:flex-start; gap:4px; padding-top:12px; border-top:1px dashed var(--border-color);">
                     <span class="meta-label">Asset Notes & Comments</span>
-                    <span class="meta-val" id="drawer-notes" style="font-weight: normal; font-size: 13px; text-align: left; max-width: 100%;">None</span>
+                    <span class="meta-val" id="drawer-notes" style="font-weight: normal; font-size: 13px; text-align: left; max-width: 100%; white-space: pre-wrap;">None</span>
                 </div>
             </div>
         </div>
@@ -680,15 +678,25 @@
             </div>
         </div>
 
+        <!-- Print Handover / Gate Pass (Available to both Admin & Staff) -->
+        <div style="padding-top: 12px; border-top: 1px dashed var(--border-color);">
+            <button type="button" class="btn btn-secondary" id="drawer-print-handover-btn" style="width: 100%; font-size: 13px;">
+                🖨️ Print Asset Handover / Gate Pass
+            </button>
+        </div>
+
         <!-- Action Grid at Bottom of Drawer -->
-        <div id="drawer-admin-footer" class="admin-only" style="margin-top:auto; padding-top:20px; border-top:1px solid var(--border-color); display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div id="drawer-admin-footer" class="admin-only" style="margin-top:auto; padding-top:16px; border-top:1px solid var(--border-color); display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <button class="btn btn-secondary" id="drawer-edit-btn">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                Edit Asset Details
+                Edit Asset
             </button>
-            <button class="btn btn-danger" id="drawer-delete-btn">
+            <button class="btn btn-warning" id="drawer-retire-btn">
+                📦 Mark Retired
+            </button>
+            <button class="btn btn-danger" id="drawer-delete-btn" style="grid-column: span 2;">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                Scrap / Delete
+                Permanently Delete Asset
             </button>
         </div>
     </div>
@@ -703,7 +711,7 @@
 
     <!-- ================= ADD / EDIT ASSET MODAL ================= -->
     <div class="modal-overlay" id="asset-modal">
-        <div class="modal-card" style="width: 600px;">
+        <div class="modal-card" style="width: 620px;">
             <div class="modal-header">
                 <h3 class="modal-title" id="asset-modal-title">Register New Asset</h3>
                 <button class="drawer-close" style="font-size:28px;" onclick="closeModal('asset-modal')">&times;</button>
@@ -723,47 +731,58 @@
                     <div class="form-group-row">
                         <div class="form-group">
                             <label class="form-label" for="asset-name">Asset Name *</label>
-                            <input type="text" id="asset-name" class="form-input" placeholder="e.g. Dell XPS 15" required>
+                            <input type="text" id="asset-name" class="form-input" placeholder="e.g. ThinkPad T14s" required>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="asset-tag">Asset Tag / SKU *</label>
-                            <input type="text" id="asset-tag" class="form-input" placeholder="e.g. IMS-LAP-024" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group-row">
                         <div class="form-group">
                             <label class="form-label" for="asset-category">Category *</label>
                             <select id="asset-category" class="form-select" required>
-                                <option value="Computer">Computer</option>
-                                <option value="Laptop">Laptop</option>
-                                <option value="Accessory">Accessory</option>
-                                <option value="Spare Parts">Spare Parts</option>
+                                <!-- Populated dynamically -->
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="asset-brand">Brand</label>
-                            <input type="text" id="asset-brand" class="form-input" placeholder="e.g. Dell, Logitech">
+                    </div>
+
+                    <!-- Smart Auto-Generated Asset Tag / SKU -->
+                    <div class="form-group">
+                        <label class="form-label" for="asset-tag" style="display:flex; justify-content:space-between; align-items:center;">
+                            <span>Asset Tag / SKU *</span>
+                            <span id="asset-tag-hint" style="font-size: 11px; color: var(--text-muted); font-family: monospace;">Auto-generated next available tag</span>
+                        </label>
+                        <div class="tag-input-group">
+                            <select id="asset-tag-prefix" class="form-select" style="width: 115px; flex-shrink: 0;" title="Select company prefix series">
+                                <option value="IMS">IMS</option>
+                                <option value="STU">STU (Studio)</option>
+                                <option value="OUT">OUT (Outsrc)</option>
+                                <option value="CLAN">CLAN</option>
+                                <option value="ACC">ACC</option>
+                            </select>
+                            <input type="text" id="asset-tag" class="form-input" placeholder="e.g. IMS-1034" style="flex-grow: 1; font-family: monospace; font-weight: 600;" required>
+                            <button type="button" id="btn-auto-generate-tag" class="btn btn-secondary" style="flex-shrink: 0; padding: 8px 12px;" title="Generate next sequential tag">🔄 Auto</button>
                         </div>
                     </div>
 
                     <div class="form-group-row">
                         <div class="form-group">
-                            <label class="form-label" for="asset-model">Model Number</label>
-                            <input type="text" id="asset-model" class="form-input" placeholder="e.g. 9530">
+                            <label class="form-label" for="asset-brand">Brand</label>
+                            <input type="text" id="asset-brand" class="form-input" placeholder="e.g. Lenovo, HP, Asus">
                         </div>
+                        <div class="form-group">
+                            <label class="form-label" for="asset-model">Model Number</label>
+                            <input type="text" id="asset-model" class="form-input" placeholder="e.g. T14s, 840 G7">
+                        </div>
+                    </div>
+
+                    <div class="form-group-row">
                         <div class="form-group">
                             <label class="form-label" for="asset-serial">Serial Number</label>
                             <input type="text" id="asset-serial" class="form-input" placeholder="e.g. SN-998811">
                         </div>
+                        <div class="form-group">
+                            <label class="form-label" for="asset-specs">Technical Specifications</label>
+                            <input type="text" id="asset-specs" class="form-input" placeholder="e.g. Intel i5, 16GB RAM, 512GB SSD">
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="asset-specs">Technical Specifications</label>
-                        <input type="text" id="asset-specs" class="form-input" placeholder="e.g. Intel i7, 16GB RAM, 512GB SSD">
-                    </div>
-
-                    <div class="form-group-row" style="margin-top:10px;">
+                    <div class="form-group-row">
                         <div class="form-group">
                             <label class="form-label" for="asset-price">Valuation Price (৳) *</label>
                             <input type="number" id="asset-price" class="form-input" min="0" step="0.01" value="0.00" required>
@@ -794,10 +813,13 @@
                         <div class="form-group">
                             <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
                                 <span>Upload Device Picture</span>
-                                <span id="photo-file-status" style="font-size:11px; color:var(--text-muted);">None</span>
+                                <span style="display:flex; align-items:center; gap:6px;">
+                                    <span id="photo-file-status" style="font-size:11px; color:var(--text-muted);">None</span>
+                                    <button type="button" id="btn-remove-photo" class="btn-remove-attachment" style="display:none;" title="Remove photo">&times;</button>
+                                </span>
                             </label>
                             <label class="file-upload-zone" id="photo-upload-zone">
-                                <span>📁 Click to attach photo</span>
+                                <span>📁 Click to attach photo (Max 800KB)</span>
                                 <input type="file" id="asset-photo-input" accept="image/*" style="display: none;">
                             </label>
                         </div>
@@ -805,10 +827,13 @@
                         <div class="form-group">
                             <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
                                 <span>Upload Invoice Document</span>
-                                <span id="invoice-file-status" style="font-size:11px; color:var(--text-muted);">None</span>
+                                <span style="display:flex; align-items:center; gap:6px;">
+                                    <span id="invoice-file-status" style="font-size:11px; color:var(--text-muted);">None</span>
+                                    <button type="button" id="btn-remove-invoice" class="btn-remove-attachment" style="display:none;" title="Remove invoice">&times;</button>
+                                </span>
                             </label>
                             <label class="file-upload-zone" id="invoice-upload-zone">
-                                <span>📄 Click to attach invoice</span>
+                                <span>📄 Click to attach invoice (PDF/Image)</span>
                                 <input type="file" id="asset-invoice-input" accept="image/*,application/pdf" style="display: none;">
                             </label>
                         </div>
@@ -819,7 +844,7 @@
                 <div class="modal-tab-content" id="modal-tab-notes">
                     <div class="form-group" style="margin-bottom:16px;">
                         <label class="form-label" for="asset-notes">Notes / Comments</label>
-                        <textarea id="asset-notes" class="form-textarea" rows="6" placeholder="e.g. Primary developer desktop. RAM customizable. Checked by audit."></textarea>
+                        <textarea id="asset-notes" class="form-textarea" rows="6" placeholder="e.g. Primary event workstation. Checked by IT audit."></textarea>
                     </div>
                 </div>
 
@@ -855,13 +880,7 @@
                 <div class="form-group">
                     <label class="form-label" for="assign-dept">Department *</label>
                     <select id="assign-dept" class="form-select" required>
-                        <option value="Software Engineering">Software Engineering</option>
-                        <option value="Human Resources">Human Resources</option>
-                        <option value="Finance & Accounts">Finance & Accounts</option>
-                        <option value="Marketing & Sales">Marketing & Sales</option>
-                        <option value="Operations">Operations</option>
-                        <option value="QA Engineering">QA Engineering</option>
-                        <option value="Administration">Administration</option>
+                        <!-- Populated dynamically -->
                     </select>
                 </div>
 
@@ -892,7 +911,7 @@
                 <div class="form-group-row">
                     <div class="form-group">
                         <label class="form-label" for="maint-part">Part Replaced / Upgraded *</label>
-                        <input type="text" id="maint-part" class="form-input" placeholder="e.g. SSD Swap, 16GB RAM Upgrade" required>
+                        <input type="text" id="maint-part" class="form-input" placeholder="e.g. SSD Swap, Battery Change" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="maint-cost">Replacement Cost (৳) *</label>
@@ -925,17 +944,32 @@
 
                 <div class="form-group">
                     <label class="form-label" for="maint-desc">Details of Upgrade / Changed Part *</label>
-                    <input type="text" id="maint-desc" class="form-input" placeholder="e.g. Swapped defective 512GB SSD with fresh Crucial P3 1TB NVMe PCIe 4.0 SSD" required>
+                    <input type="text" id="maint-desc" class="form-input" placeholder="e.g. Replaced original battery with genuine 4-cell unit" required>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="maint-reason">Technical Reason for Upgrade *</label>
-                    <textarea id="maint-reason" class="form-textarea" rows="2" placeholder="e.g. Original storage disk corrupted / System performance upgrade required for database tools" required></textarea>
+                    <textarea id="maint-reason" class="form-textarea" rows="2" placeholder="e.g. Battery swelling / no backup power" required></textarea>
+                </div>
+
+                <!-- Optional Repair Invoice / Bill Upload -->
+                <div class="form-group">
+                    <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>Repair Bill / Invoice (Optional, Max 800KB)</span>
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <span id="maint-invoice-status" style="font-size:11px; color:var(--text-muted);">None</span>
+                            <button type="button" id="btn-remove-maint-invoice" class="btn-remove-attachment" style="display:none;" title="Remove repair invoice">&times;</button>
+                        </span>
+                    </label>
+                    <label class="file-upload-zone" style="min-height: 54px; padding: 10px;">
+                        <span>📄 Click to attach repair invoice (PDF or Image)</span>
+                        <input type="file" id="maint-invoice-input" accept="image/*,application/pdf" style="display: none;">
+                    </label>
                 </div>
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('maintenance-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Log Maintenance Part</button>
+                    <button type="submit" class="btn btn-primary">Save Maintenance Record</button>
                 </div>
             </form>
         </div>
@@ -953,23 +987,23 @@
                 
                 <div class="form-group">
                     <label class="form-label" for="vendor-name">Company Name *</label>
-                    <input type="text" id="vendor-name" class="form-input" placeholder="e.g. Elite Tech Support" required>
+                    <input type="text" id="vendor-name" class="form-input" placeholder="e.g. GOTech Computer" required>
                 </div>
 
                 <div class="form-group-row">
                     <div class="form-group">
                         <label class="form-label" for="vendor-contact">Contact Person *</label>
-                        <input type="text" id="vendor-contact" class="form-input" placeholder="e.g. Tanvir Ahmed" required>
+                        <input type="text" id="vendor-contact" class="form-input" placeholder="e.g. Robin" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="vendor-mobile">Mobile Number *</label>
-                        <input type="tel" id="vendor-mobile" class="form-input" placeholder="e.g. +880-1711-223344" required>
+                        <input type="tel" id="vendor-mobile" class="form-input" placeholder="e.g. 01912825341" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="vendor-email">Email Address *</label>
-                    <input type="email" id="vendor-email" class="form-input" placeholder="e.g. support@elitetech.com" required>
+                    <input type="email" id="vendor-email" class="form-input" placeholder="e.g. sales@vendor.com" required>
                 </div>
 
                 <div class="form-group">
@@ -979,7 +1013,7 @@
 
                 <div class="form-group">
                     <label class="form-label" for="vendor-notes">Services & Notes (Supplied hardware terms)</label>
-                    <textarea id="vendor-notes" class="form-textarea" rows="2" placeholder="e.g. Dell business laptops distributor, provides 3-year standard manufacturer warranty parts replacement."></textarea>
+                    <textarea id="vendor-notes" class="form-textarea" rows="2" placeholder="e.g. Laptop distributor, 3-year warranty replacement parts."></textarea>
                 </div>
 
                 <div class="modal-footer">
