@@ -290,6 +290,21 @@
                         <option value="Maintenance">Maintenance</option>
                         <option value="Retired">Retired</option>
                     </select>
+
+                    <!-- Warranty Filter -->
+                    <select id="filter-warranty" class="select-filter">
+                        <option value="all">All Warranties</option>
+                        <option value="alerts">Expired &amp; Expiring</option>
+                        <option value="expired">Expired Only</option>
+                        <option value="expiring">Expiring (30d)</option>
+                        <option value="active">Active Warranty</option>
+                        <option value="none">No Warranty Recorded</option>
+                    </select>
+
+                    <!-- 1-Click Clear Filters Button -->
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-filters" style="display: none; padding: 9px 12px; color: var(--color-primary); border-color: rgba(var(--color-primary-rgb), 0.35);" title="Clear all active search and dropdown filters">
+                        ✕ Clear Filters
+                    </button>
                 </div>
 
                 <!-- Export/Import & Adding Controls -->

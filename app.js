@@ -144,6 +144,8 @@ const DOM = {
     filterCategory: document.getElementById('filter-category'),
     filterDepartment: document.getElementById('filter-department'),
     filterStatus: document.getElementById('filter-status'),
+    filterWarranty: document.getElementById('filter-warranty'),
+    btnClearFilters: document.getElementById('btn-clear-filters'),
     inventoryTableBody: document.getElementById('inventory-table-body'),
     inventoryEmptyState: document.getElementById('inventory-empty-state'),
     inventoryPagination: document.getElementById('inventory-pagination'),
@@ -598,7 +600,11 @@ function setupEventListeners() {
 
     DOM.tabButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            switchTab(btn.getAttribute('data-tab'));
+            const targetTab = btn.getAttribute('data-tab');
+            if (targetTab === 'inventory-tab') {
+                resetInventoryFilters();
+            }
+            switchTab(targetTab);
         });
     });
 
@@ -665,6 +671,15 @@ function setupEventListeners() {
         paginationConfig.currentPage = 1;
         renderInventoryTable();
     });
+    if (DOM.filterWarranty) {
+        DOM.filterWarranty.addEventListener('change', () => {
+            paginationConfig.currentPage = 1;
+            renderInventoryTable();
+        });
+    }
+    if (DOM.btnClearFilters) {
+        DOM.btnClearFilters.addEventListener('click', resetInventoryFilters);
+    }
 
     // Inventory Pagination Listeners
     if (DOM.paginationLimit) {
@@ -849,7 +864,7 @@ function setupEventListeners() {
         DOM.pillAvailableStock.addEventListener('click', () => navigateToFilteredInventory({ status: 'Available' }));
     }
     if (DOM.pillWarrantyAlerts) {
-        DOM.pillWarrantyAlerts.addEventListener('click', () => navigateToFilteredInventory({}));
+        DOM.pillWarrantyAlerts.addEventListener('click', () => navigateToFilteredInventory({ warranty: 'alerts' }));
     }
 
     const kpiWorkCard = document.getElementById('kpi-card-workstations');
@@ -879,11 +894,31 @@ function setupEventListeners() {
     });
 }
 
-function navigateToFilteredInventory({ status = 'all', category = 'all', department = 'all' } = {}) {
+function resetInventoryFilters() {
     if (DOM.inventorySearch) DOM.inventorySearch.value = '';
-    if (DOM.filterStatus) DOM.filterStatus.value = status;
-    if (DOM.filterCategory) DOM.filterCategory.value = category;
-    if (DOM.filterDepartment) DOM.filterDepartment.value = department;
+    if (DOM.filterStatus) DOM.filterStatus.value = 'all';
+    if (DOM.filterCategory) DOM.filterCategory.value = 'all';
+    if (DOM.filterDepartment) DOM.filterDepartment.value = 'all';
+    if (DOM.filterWarranty) DOM.filterWarranty.value = 'all';
+    paginationConfig.currentPage = 1;
+    renderInventoryTable();
+}
+
+function navigateToFilteredInventory({ status = 'all', category = 'all', department = 'all', warranty = 'all' } = {}) {
+    populateCategoriesAndDepartments();
+    if (DOM.inventorySearch) DOM.inventorySearch.value = '';
+    if (DOM.filterStatus) {
+        DOM.filterStatus.value = [...DOM.filterStatus.options].some(o => o.value === status) ? status : 'all';
+    }
+    if (DOM.filterCategory) {
+        DOM.filterCategory.value = [...DOM.filterCategory.options].some(o => o.value === category) ? category : 'all';
+    }
+    if (DOM.filterDepartment) {
+        DOM.filterDepartment.value = [...DOM.filterDepartment.options].some(o => o.value === department) ? department : 'all';
+    }
+    if (DOM.filterWarranty) {
+        DOM.filterWarranty.value = [...DOM.filterWarranty.options].some(o => o.value === warranty) ? warranty : 'all';
+    }
     paginationConfig.currentPage = 1;
     switchTab('inventory-tab');
     renderInventoryTable();
@@ -1693,10 +1728,17 @@ function renderPaginationControls(totalPages) {
 // ================= INVENTORY TABLE CONTROLLER =================
 function renderInventoryTable() {
     const tableBody = DOM.inventoryTableBody;
-    const query = DOM.inventorySearch.value.trim().toLowerCase();
-    const catFilter = DOM.filterCategory.value;
-    const deptFilter = DOM.filterDepartment ? DOM.filterDepartment.value : 'all';
-    const statFilter = DOM.filterStatus.value;
+    const query = (DOM.inventorySearch ? DOM.inventorySearch.value : '').trim().toLowerCase();
+    const catFilter = (DOM.filterCategory && DOM.filterCategory.value) || 'all';
+    const deptFilter = (DOM.filterDepartment && DOM.filterDepartment.value) || 'all';
+    const statFilter = (DOM.filterStatus && DOM.filterStatus.value) || 'all';
+    const warrantyFilter = (DOM.filterWarranty && DOM.filterWarranty.value) || 'all';
+
+    // Show/hide 1-click Clear Filters button whenever any filter is active
+    const hasActiveFilters = Boolean(query) || catFilter !== 'all' || deptFilter !== 'all' || statFilter !== 'all' || warrantyFilter !== 'all';
+    if (DOM.btnClearFilters) {
+        DOM.btnClearFilters.style.display = hasActiveFilters ? 'inline-flex' : 'none';
+    }
 
     tableBody.innerHTML = '';
 
@@ -1710,6 +1752,21 @@ function renderInventoryTable() {
             }
         }
         if (statFilter !== 'all' && asset.status !== statFilter) return false;
+
+        if (warrantyFilter !== 'all') {
+            const w = getWarrantyStatus(asset.warrantyExpiry);
+            if (warrantyFilter === 'alerts') {
+                if (asset.status === 'Retired' || !w || (w.cls !== 'warranty-expired' && w.cls !== 'warranty-expiring')) return false;
+            } else if (warrantyFilter === 'expired') {
+                if (!w || w.cls !== 'warranty-expired') return false;
+            } else if (warrantyFilter === 'expiring') {
+                if (!w || w.cls !== 'warranty-expiring') return false;
+            } else if (warrantyFilter === 'active') {
+                if (!w || w.cls !== 'warranty-active') return false;
+            } else if (warrantyFilter === 'none') {
+                if (w) return false;
+            }
+        }
 
         if (query) {
             return (
@@ -3355,37 +3412,36 @@ window.extendWarranty = function(assetId, event) {
 
 // ================= DROPDOWNS POPULATOR (PRESERVES ACTIVE FILTERS!) =================
 function populateCategoriesAndDepartments() {
+    const allCategories = [...new Set([...state.categories, ...state.assets.map(a => a.category).filter(Boolean)])];
+    const allDepartments = [...new Set([...state.departments, ...state.assets.map(a => a.department).filter(Boolean)])];
+
     const filterCatSelect = document.getElementById('filter-category');
     if (filterCatSelect) {
         const prevCat = filterCatSelect.value || 'all';
         let opts = '<option value="all">All Categories</option>';
-        state.categories.forEach(cat => {
+        allCategories.forEach(cat => {
             opts += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
         });
         filterCatSelect.innerHTML = opts;
-        if ([...filterCatSelect.options].some(o => o.value === prevCat)) {
-            filterCatSelect.value = prevCat;
-        }
+        filterCatSelect.value = [...filterCatSelect.options].some(o => o.value === prevCat) ? prevCat : 'all';
     }
 
     const filterDeptSelect = document.getElementById('filter-department');
     if (filterDeptSelect) {
         const prevDept = filterDeptSelect.value || 'all';
         let opts = '<option value="all">All Departments</option><option value="__unassigned__">Unassigned / Stock</option>';
-        state.departments.forEach(dept => {
+        allDepartments.forEach(dept => {
             opts += `<option value="${escapeHtml(dept)}">${escapeHtml(dept)}</option>`;
         });
         filterDeptSelect.innerHTML = opts;
-        if ([...filterDeptSelect.options].some(o => o.value === prevDept)) {
-            filterDeptSelect.value = prevDept;
-        }
+        filterDeptSelect.value = [...filterDeptSelect.options].some(o => o.value === prevDept) ? prevDept : 'all';
     }
 
     const assetCatSelect = document.getElementById('asset-category');
     if (assetCatSelect) {
         const prevModalCat = assetCatSelect.value;
         let opts = '';
-        state.categories.forEach(cat => {
+        allCategories.forEach(cat => {
             opts += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
         });
         assetCatSelect.innerHTML = opts;
@@ -3398,7 +3454,7 @@ function populateCategoriesAndDepartments() {
     if (assignDeptSelect) {
         const prevAssignDept = assignDeptSelect.value;
         let opts = '';
-        state.departments.forEach(dept => {
+        allDepartments.forEach(dept => {
             opts += `<option value="${escapeHtml(dept)}">${escapeHtml(dept)}</option>`;
         });
         assignDeptSelect.innerHTML = opts;
