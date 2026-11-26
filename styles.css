@@ -655,24 +655,28 @@ header::before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
+    gap: 10px;
+    flex-wrap: nowrap;
     background: var(--bg-card);
-    padding: 16px 20px;
+    padding: 12px 16px;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .search-filter-group {
     display: flex;
-    gap: 12px;
-    flex-grow: 1;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: nowrap;
 }
 
 .input-search-wrapper {
     position: relative;
-    flex-grow: 1;
+    flex: 1 1 190px;
+    min-width: 155px;
     max-width: 320px;
 }
 
@@ -680,11 +684,11 @@ header::before {
     width: 100%;
     background: var(--bg-input);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
     font-family: var(--font-body);
-    font-size: 14px;
-    padding: 10px 16px 10px 40px;
+    font-size: 13px;
+    padding: 8px 12px 8px 34px;
     outline: none;
     transition: all var(--transition-fast);
 }
@@ -696,27 +700,64 @@ header::before {
 
 .search-icon-svg {
     position: absolute;
-    left: 14px;
+    left: 11px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
+    width: 14px;
+    height: 14px;
 }
 
 .select-filter {
     background: var(--bg-input);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
     font-family: var(--font-body);
-    font-size: 14px;
-    padding: 10px 16px;
+    font-size: 13px;
+    padding: 8px 10px;
     outline: none;
     cursor: pointer;
-    min-width: 140px;
+    min-width: 0;
+    max-width: 160px;
+    flex-shrink: 1;
 }
 
 .select-filter:focus {
     border-color: var(--color-primary);
+}
+
+.action-btn-cluster {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.control-bar .btn {
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+}
+
+@media (max-width: 1220px) {
+    .control-bar {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .search-filter-group {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    .select-filter {
+        flex: 1 1 130px;
+        max-width: none;
+    }
+    .action-btn-cluster {
+        width: 100%;
+        justify-content: flex-end;
+    }
 }
 
 .table-wrapper {
@@ -1486,13 +1527,6 @@ footer {
     grid-template-columns: 1fr 1fr;
     gap: 24px;
     width: 100%;
-}
-
-.action-btn-cluster {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
 }
 
 /* Responsive Breakpoints for Tablets & Phones */
